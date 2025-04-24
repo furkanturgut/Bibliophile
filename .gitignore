@@ -1,0 +1,77 @@
+
+# ----------------------------
+# 📦 .NET & Visual Studio
+# ----------------------------
+
+## Build results
+bin/
+obj/
+
+## User-specific files
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## VS Code
+.vscode/
+.history/
+
+## Rider
+.idea/
+
+## OS-specific files
+.DS_Store
+Thumbs.db
+
+## Logs
+*.log
+
+# ----------------------------
+# 🔧 Entity Framework
+# ----------------------------
+
+# EF Core Migrations (optional)
+Migrations/
+
+# ----------------------------
+# 🎨 Frontend (React)
+# ----------------------------
+
+# Node modules
+**/node_modules/
+
+# Build artifacts
+**/build/
+**/dist/
+
+# Env files
+**/.env
+**/.env.local
+**/.env.development
+**/.env.production
+**/.env.test
+
+# React misc
+**/.cache/
+**/coverage/
+**/yarn-error.log
+**/npm-debug.log
+**/package-lock.json
+**/yarn.lock
+
+# ----------------------------
+# 🌐 GitHub / CI
+# ----------------------------
+
+# Ignore GitHub artifacts
+.github/
+
+# ----------------------------
+# 🛑 Sensitive Files
+# ----------------------------
+
+secrets.json
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Local.json
