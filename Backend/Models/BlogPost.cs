@@ -12,10 +12,10 @@ namespace Backend.Models
         public string Content { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
         public DateTime UpdatedAt { get; set; }
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
         public AppUser? User { get; set; }
         public List<PostLike>? PostLikes { get; set; }
         public List<BookAuthorsOfPost>? BookAuthorsOfPost { get; set; }
-        public List<BooksOfPost> BooksOfPost { get; set; }
+        public List<BooksOfPost> BooksOfPosts { get; set; }
     }
 }

@@ -10,6 +10,6 @@ namespace Backend.Models
         public int? AuthorId { get; set; }
         public Author? Author { get; set; }
         public int? PostId { get; set; }
-        public BlogPost? BlogPost { get; set; }
+        public BlogPost? Post { get; set; }
     }
 }

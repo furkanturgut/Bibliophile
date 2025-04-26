@@ -7,6 +7,7 @@ namespace Backend.Models
 {
     public class BooksOfList
     {
+        public int Id { get; set; }
         public int? ListId { get; set; }
         public BookList? List { get; set; }
         public int? BookId { get; set; }

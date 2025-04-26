@@ -13,7 +13,7 @@ namespace Backend.Models
         public string Biography { get; set; }
         public string AuthorPhoto { get; set; }
         public List<Book>? Books { get; set; }
-        public List<BookAuthorsOfPost>? AuthorOfPosts { get; set; }
+        public List<BookAuthorsOfPost>? BookAuthorsOfPost { get; set; }
 
     }
 }

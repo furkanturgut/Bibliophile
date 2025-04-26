@@ -18,8 +18,8 @@ namespace Backend.Models
         public Author? Author { get; set; }  
         public List<BookGenre>? BookGenres { get; set; }
         public List<BookLikes>? BookLikes { get; set; }
-        public List<BooksOfList>? BooksOfList { get; set; }
-        public List<BooksOfPost>? BookOfPosts { get; set; }
+        public List<BooksOfList>? BooksOfLists { get; set; }
+        public List<BooksOfPost>? BooksOfPosts { get; set; }
         public List<Rating>? Ratings { get; set; }
 
     }

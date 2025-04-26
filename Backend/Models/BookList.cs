@@ -12,7 +12,7 @@ namespace Backend.Models
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
         public string Description { get; set; }
-        public int? UserId { get; set; }
+        public string? UserId { get; set; }
         public AppUser? User { get; set; }
         public List<ListLike>? ListLikes { get; set; }
         public List<BooksOfList>? BooksOfLists { get; set; }
