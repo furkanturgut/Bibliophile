@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Backend.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,7 +58,32 @@ namespace Backend.Data
             builder.Entity<BookAuthorsOfPost>().HasKey(bap=> new {bap.PostId, bap.AuthorId});
             builder.Entity<BookAuthorsOfPost>().HasOne(b=> b.Post).WithMany(bap=> bap.BookAuthorsOfPost).HasForeignKey(b=> b.PostId);
             builder.Entity<BookAuthorsOfPost>().HasOne(b=> b.Author).WithMany(bap=> bap.BookAuthorsOfPost).HasForeignKey(b=> b.AuthorId);
+
+            var roles = new List<IdentityRole>
+            {
+                new IdentityRole
+                {
+                    Id= "1",
+                    Name= "Admin",
+                    NormalizedName= "ADMIN"
+
+                },
+                new IdentityRole
+                {
+                    Id= "2",
+                    Name= "User",
+                    NormalizedName= "USER"
+                },
+                new IdentityRole
+                {
+                    Id= "3",
+                    Name= "Blogger",
+                    NormalizedName= "Blogger"
+                }
+            };
+            builder.Entity<IdentityRole>().HasData(roles);
         }
+    
        
 
 
