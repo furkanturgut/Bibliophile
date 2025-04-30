@@ -15,12 +15,14 @@ namespace Backend.Controllers
         private readonly UserManager<AppUser> _userManager ; 
         private readonly ITokenService _tokenService ;
         private readonly SignInManager<AppUser> _signInManager;
+        private readonly IAccountService _accountService;
 
-        public AccountController(UserManager<AppUser> userManager, ITokenService tokenService, SignInManager<AppUser> signInManager)
+        public AccountController(UserManager<AppUser> userManager, ITokenService tokenService, SignInManager<AppUser> signInManager, IAccountService accountService)
         {
            this._userManager= userManager;
            this._tokenService=tokenService;
             this._signInManager = signInManager;
+            this._accountService = accountService;
         }
 
         [HttpPost]
@@ -100,6 +102,20 @@ namespace Backend.Controllers
                 Email= appUser.Email,
                 Token = _tokenService.CreateToken(appUser)
             });
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllUsers ()
+        {
+            try
+            {
+                var users = await _accountService.GetAll();
+                return Ok(users);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }
