@@ -82,7 +82,52 @@ namespace Backend.Data
                 }
             };
             builder.Entity<IdentityRole>().HasData(roles);
+            var genres = new List<Genre>
+            {
+                new Genre { Id = 1, Name = "Fiction" },
+                new Genre { Id = 2, Name = "Non-fiction" },
+                new Genre { Id = 3, Name = "Mystery" },
+                new Genre { Id = 4, Name = "Science Fiction" },
+                new Genre { Id = 5, Name = "Fantasy" },
+                new Genre { Id = 6, Name = "Romance" },
+                new Genre { Id = 7, Name = "Thriller" },
+                new Genre { Id = 8, Name = "Horror" },
+                new Genre { Id = 9, Name = "Biography" },
+                new Genre { Id = 10, Name = "Autobiography" },
+                new Genre { Id = 11, Name = "History" },
+                new Genre { Id = 12, Name = "Self-help" },
+                new Genre { Id = 13, Name = "Business" },
+                new Genre { Id = 14, Name = "Memoir" },
+                new Genre { Id = 15, Name = "Poetry" },
+                new Genre { Id = 16, Name = "Children's" },
+                new Genre { Id = 17, Name = "Young Adult" },
+                new Genre { Id = 18, Name = "Dystopian" },
+                new Genre { Id = 19, Name = "Adventure" },
+                new Genre { Id = 20, Name = "Historical Fiction" },
+                new Genre { Id = 21, Name = "Science" },
+                new Genre { Id = 22, Name = "Technology" },
+                new Genre { Id = 23, Name = "Philosophy" },
+                new Genre { Id = 24, Name = "Religion" },
+                new Genre { Id = 25, Name = "Psychology" },
+                new Genre { Id = 26, Name = "Cooking" },
+                new Genre { Id = 27, Name = "Art" },
+                new Genre { Id = 28, Name = "Travel" },
+                new Genre { Id = 29, Name = "Sports" },
+                new Genre { Id = 30, Name = "Contemporary" },
+                new Genre { Id = 31, Name = "Classics" },
+                new Genre { Id = 32, Name = "Graphic Novel" },
+                new Genre { Id = 33, Name = "Comic" },
+                new Genre { Id = 34, Name = "Crime" },
+                new Genre { Id = 35, Name = "Literary Fiction" },
+                new Genre { Id = 36, Name = "Humor" },
+                new Genre { Id = 37, Name = "Drama" },
+                new Genre { Id = 38, Name = "Western" },
+                new Genre { Id = 39, Name = "Historical" },
+                new Genre { Id = 40, Name = "Reference" }
+            };
+            builder.Entity<Genre>().HasData(genres);
         }
+    }
     
        
 
@@ -90,4 +135,3 @@ namespace Backend.Data
 
 
     }
-}
