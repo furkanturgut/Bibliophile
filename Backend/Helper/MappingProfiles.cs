@@ -7,7 +7,9 @@ using Backend.Dtos.AccountDtos;
 using Backend.Dtos.AuthorDto;
 using Backend.Dtos.BlogPostDtos;
 using Backend.Dtos.BookDtos;
+using Backend.Dtos.BookListDtos;
 using Backend.Dtos.GenreDtos;
+using Backend.Dtos.RatingDtos;
 using Backend.Models;
 
 namespace Backend.Helper
@@ -112,6 +114,69 @@ namespace Backend.Helper
                 .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
 
             CreateMap<Genre, GenreDto>().ReverseMap();
+
+            // Rating -> RatingDto mapping
+            CreateMap<Rating, RatingDto>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => 
+                    src.User != null ? src.User.UserName : null))
+                .ForMember(dest => dest.BookName, opt => opt.MapFrom(src => 
+                    src.Book != null ? src.Book.Name : null));
+
+            // CreateRatingDto -> Rating mapping
+            CreateMap<CreateRatingDto, Rating>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.Book, opt => opt.Ignore());
+
+            // UpdateRatingDto -> Rating mapping
+            CreateMap<UpdateRatingDto, Rating>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.BookId, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.Book, opt => opt.Ignore());
+
+            // BookList mappings
+            CreateMap<BookList, BookListDto>()
+                .ForMember(dest => dest.UserName, opt => opt.MapFrom(src => 
+                    src.User != null ? src.User.UserName : null))
+                .ForMember(dest => dest.BooksCount, opt => opt.MapFrom(src => 
+                    src.BooksOfLists != null ? src.BooksOfLists.Count : 0))
+                .ForMember(dest => dest.LikesCount, opt => opt.MapFrom(src => 
+                    src.ListLikes != null ? src.ListLikes.Count : 0))
+                .ForMember(dest => dest.Books, opt => opt.MapFrom(src => 
+                    src.BooksOfLists != null ? src.BooksOfLists.Select(bol => new BookInListDto
+                    {
+                        Id = bol.Book.Id,
+                        Name = bol.Book.Name,
+                        AuthorName = bol.Book.Author != null ? bol.Book.Author.Name : null
+                    }).ToList() : null));
+
+            // CreateBookListDto -> BookList mapping
+            CreateMap<CreateBookListDto, BookList>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.ListLikes, opt => opt.Ignore())
+                .ForMember(dest => dest.BooksOfLists, opt => opt.Ignore());
+
+            // UpdateBookListDto -> BookList mapping
+            CreateMap<UpdateBookListDto, BookList>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore())
+                .ForMember(dest => dest.UserId, opt => opt.Ignore())
+                .ForMember(dest => dest.User, opt => opt.Ignore())
+                .ForMember(dest => dest.ListLikes, opt => opt.Ignore())
+                .ForMember(dest => dest.BooksOfLists, opt => opt.Ignore())
+                .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

@@ -90,6 +90,16 @@ builder.Services.AddScoped<IAuthorService, AuthorService>();
 builder.Services.AddScoped<IBlogPostRepository, BlogPostRepository>();
 builder.Services.AddScoped<IBlogPostService, BlogPostService>();
 builder.Services.AddScoped<IGenreService, GenreService>();
+builder.Services.AddScoped<IRatingRepository, RatingRepository>();
+builder.Services.AddScoped<IRatingService, RatingService>();
+builder.Services.AddScoped<IBookListRepository, BookListRepository>();
+builder.Services.AddScoped<IBookListService, BookListService>();
+builder.Services.AddScoped<IPostLikeService, PostLikeService>();
+builder.Services.AddScoped<IPostLikeRepository, PostLikeRepository>();
+builder.Services.AddScoped<IBookLikesRepository, BookLikesRepository>();
+builder.Services.AddScoped<IBookLikesService, BookLikesService>();
+builder.Services.AddScoped<IListLikeRepository, ListLikeRepository>();
+builder.Services.AddScoped<IListLikeService, ListLikeService>();
 
 var app = builder.Build();
 
