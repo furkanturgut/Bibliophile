@@ -1,0 +1,211 @@
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using AutoMapper;
+using Backend.Dtos.BookListDtos;
+using Backend.Interface;
+using Backend.Models;
+
+namespace Backend.Services
+{
+    public class BookListService : IBookListService
+    {
+        private readonly IBookListRepository _bookListRepository;
+        private readonly IBookRepository _bookRepository;
+        private readonly IMapper _mapper;
+
+        public BookListService(
+            IBookListRepository bookListRepository,
+            IBookRepository bookRepository,
+            IMapper mapper)
+        {
+            _bookListRepository = bookListRepository;
+            _bookRepository = bookRepository;
+            _mapper = mapper;
+        }
+
+        public async Task<List<BookListDto>> GetAllBookListsAsync()
+        {
+            try
+            {
+                var bookLists = await _bookListRepository.GetAllBookListsAsync();
+                return _mapper.Map<List<BookListDto>>(bookLists);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<BookListDto?> GetBookListByIdAsync(int id)
+        {
+            try
+            {
+                var bookList = await _bookListRepository.GetBookListByIdAsync(id);
+                if (bookList == null)
+                    return null;
+                    
+                return _mapper.Map<BookListDto>(bookList);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<List<BookListDto>> GetBookListsByUserIdAsync(string userId)
+        {
+            try
+            {
+                var bookLists = await _bookListRepository.GetBookListsByUserIdAsync(userId);
+                return _mapper.Map<List<BookListDto>>(bookLists);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<BookListDto> CreateBookListAsync(CreateBookListDto createBookListDto, string userId)
+        {
+            try
+            {
+                var bookList = _mapper.Map<BookList>(createBookListDto);
+                bookList.UserId = userId;
+                bookList.CreatedAt = DateTime.Now;
+                bookList.UpdatedAt = DateTime.Now;
+                
+                var createdBookList = await _bookListRepository.AddBookListAsync(bookList);
+                return _mapper.Map<BookListDto>(createdBookList);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<BookListDto?> UpdateBookListAsync(int id, UpdateBookListDto updateBookListDto)
+        {
+            try
+            {
+                var bookList = await _bookListRepository.GetBookListByIdAsync(id);
+                if (bookList == null)
+                    return null;
+                    
+                _mapper.Map(updateBookListDto, bookList);
+                bookList.UpdatedAt = DateTime.Now;
+                
+                var updatedBookList = await _bookListRepository.UpdateBookListAsync(bookList);
+                return _mapper.Map<BookListDto>(updatedBookList);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<BookListDto?> DeleteBookListAsync(int id)
+        {
+            try
+            {
+                var bookList = await _bookListRepository.GetBookListByIdAsync(id);
+                if (bookList == null)
+                    return null;
+                    
+                var deletedBookList = await _bookListRepository.DeleteBookListAsync(bookList);
+                return _mapper.Map<BookListDto>(deletedBookList);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<List<BookListDto>> GetPopularBookListsAsync(int count)
+        {
+            try
+            {
+                var bookLists = await _bookListRepository.GetPopularBookListsAsync(count);
+                return _mapper.Map<List<BookListDto>>(bookLists);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<bool> BookListExistsAsync(int id)
+        {
+            try
+            {
+                return await _bookListRepository.BookListExistsAsync(id);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<bool> IsUserListOwnerAsync(int listId, string userId)
+        {
+            try
+            {
+                var bookList = await _bookListRepository.GetBookListByIdAsync(listId);
+                return bookList != null && bookList.UserId == userId;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<BookListDto> AddBookToListAsync(int listId, AddBookToListDto addBookToListDto)
+        {
+            try
+            {
+                var bookList = await _bookListRepository.GetBookListByIdAsync(listId);
+                if (bookList == null)
+                    throw new KeyNotFoundException($"ID {listId} ile kitap listesi bulunamadı");
+                    
+                var book = await _bookRepository.GetBookByIdAsync(addBookToListDto.BookId);
+                if (book == null)
+                    throw new KeyNotFoundException($"ID {addBookToListDto.BookId} ile kitap bulunamadı");
+                
+                var bookOfList = new BooksOfList
+                {
+                    ListId = listId,
+                    BookId = addBookToListDto.BookId
+                };
+                
+                await _bookListRepository.AddBookToListAsync(bookOfList);
+                
+                // Güncellenmiş listeyi getir
+                var updatedBookList = await _bookListRepository.GetBookListByIdAsync(listId);
+                return _mapper.Map<BookListDto>(updatedBookList);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
+        public async Task<BookListDto?> RemoveBookFromListAsync(int listId, int bookId)
+        {
+            try
+            {
+                await _bookListRepository.RemoveBookFromListAsync(listId, bookId);
+                
+                // Güncellenmiş listeyi getir
+                var updatedBookList = await _bookListRepository.GetBookListByIdAsync(listId);
+                if (updatedBookList == null)
+                    return null;
+                    
+                return _mapper.Map<BookListDto>(updatedBookList);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+    }
+}
