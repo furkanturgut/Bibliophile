@@ -96,7 +96,131 @@ dotnet run
 4. Tüm korumalı uç noktalara erişim sağla
 
 ---
+## Api EndPointler
+## 🔐 Kimlik Doğrulama
 
+| Metod | Endpoint               | Açıklama                                      |
+|-------|------------------------|-----------------------------------------------|
+| POST  | `/api/Account/register`| Yeni kullanıcı kaydı                          |
+| POST  | `/api/Account/login`   | Kullanıcı girişi                              |
+| GET   | `/api/Account/me`      | Giriş yapmış kullanıcının bilgilerini getirir |
+
+---
+
+## 📚 Kitaplar
+
+| Metod | Endpoint                   | Açıklama                                       |
+|-------|----------------------------|------------------------------------------------|
+| GET   | `/api/Book`                | Tüm kitapları listeler                        |
+| GET   | `/api/Book/{id}`           | ID'ye göre kitap detaylarını getirir          |
+| POST  | `/api/Book`                | Yeni kitap ekler (Admin)                      |
+| PUT   | `/api/Book/{id}`           | Kitap bilgilerini günceller (Admin)           |
+| DELETE| `/api/Book/{id}`           | Kitabı siler (Admin)                          |
+| GET   | `/api/Book/search?q=...`   | Kitapları ada göre arar                       |
+| GET   | `/api/Book/genre/{genreId}`| Türe göre kitapları listeler                  |
+| GET   | `/api/Book/author/{authorId}`| Yazara göre kitapları listeler               |
+
+---
+
+## 👨‍🎨 Yazarlar
+
+| Metod | Endpoint                 | Açıklama                                  |
+|-------|--------------------------|-------------------------------------------|
+| GET   | `/api/Author`            | Tüm yazarları listeler                    |
+| GET   | `/api/Author/{id}`       | ID'ye göre yazar detaylarını getirir      |
+| POST  | `/api/Author`            | Yeni yazar ekler (Admin)                  |
+| PUT   | `/api/Author/{id}`       | Yazar bilgilerini günceller (Admin)       |
+| DELETE| `/api/Author/{id}`       | Yazarı siler (Admin)                      |
+| GET   | `/api/Author/search?q=`  | Yazarlarda arama yapar                    |
+
+---
+
+## 🏷️ Türler
+
+| Metod | Endpoint                       | Açıklama                             |
+|-------|--------------------------------|--------------------------------------|
+| GET   | `/api/Genre`                   | Tüm türleri listeler                 |
+| GET   | `/api/Genre/{id}`              | ID'ye göre tür detaylarını getirir   |
+| GET   | `/api/Genre/search?name=`      | İsimle tür arar                      |
+| GET   | `/api/Genre/exists/{id}`       | Türün varlığını kontrol eder         |
+
+---
+
+## 📝 Blog Yazıları
+
+| Metod | Endpoint                          | Açıklama                                       |
+|-------|-----------------------------------|------------------------------------------------|
+| GET   | `/api/BlogPost`                   | Tüm blog yazılarını listeler                   |
+| GET   | `/api/BlogPost/{id}`              | ID'ye göre yazı detaylarını getirir            |
+| POST  | `/api/BlogPost`                   | Yeni blog yazısı oluşturur (Auth)              |
+| PUT   | `/api/BlogPost/{id}`              | Yazıyı günceller (Auth, Yazar)                 |
+| DELETE| `/api/BlogPost/{id}`              | Yazıyı siler (Auth, Yazar, Admin)              |
+| GET   | `/api/BlogPost/user/{userId}`     | Belirli kullanıcının yazılarını getirir        |
+| GET   | `/api/BlogPost/my-posts`          | Giriş yapmış kullanıcının yazılarını getirir   |
+
+---
+
+## ⭐ Puanlama ve Yorumlar
+
+| Metod | Endpoint                              | Açıklama                                          |
+|-------|---------------------------------------|---------------------------------------------------|
+| GET   | `/api/Rating`                         | Tüm puanlamaları listeler                         |
+| GET   | `/api/Rating/{id}`                    | Belirli bir puanlama detayını getirir             |
+| POST  | `/api/Rating`                         | Yeni puanlama ekler (Auth)                        |
+| PUT   | `/api/Rating/{id}`                    | Puanlamayı günceller (Auth, Sahip)                |
+| DELETE| `/api/Rating/{id}`                    | Puanlamayı siler (Auth, Sahip, Admin)             |
+| GET   | `/api/Rating/book/{bookId}`           | Belirli kitabın puanlamaları                      |
+| GET   | `/api/Rating/user/{userId}`           | Belirli kullanıcının puanlamaları                 |
+| GET   | `/api/Rating/my-ratings`              | Kendi tüm puanlamaların                           |
+| GET   | `/api/Rating/my-rating/book/{bookId}` | Belirli bir kitaba verdiğin puanı getirir         |
+| GET   | `/api/Rating/average/{bookId}`        | Kitabın ortalama puanını hesaplar                 |
+
+---
+
+## 📋 Kitap Listeleri
+
+| Metod | Endpoint                                   | Açıklama                                         |
+|-------|--------------------------------------------|--------------------------------------------------|
+| GET   | `/api/BookList`                            | Tüm listeleri listeler                           |
+| GET   | `/api/BookList/{id}`                       | ID'ye göre liste detaylarını getirir             |
+| POST  | `/api/BookList`                            | Yeni liste oluşturur (Auth)                      |
+| PUT   | `/api/BookList/{id}`                       | Listeyi günceller (Auth, Sahip)                  |
+| DELETE| `/api/BookList/{id}`                       | Listeyi siler (Auth, Sahip, Admin)               |
+| GET   | `/api/BookList/user/{userId}`              | Kullanıcının listelerini getirir                 |
+| GET   | `/api/BookList/my-lists`                   | Giriş yapan kullanıcının listeleri               |
+| GET   | `/api/BookList/popular/{count}`            | En çok beğenilen listeleri getirir               |
+| POST  | `/api/BookList/{id}/books`                 | Listeye kitap ekler (Auth, Sahip)                |
+| DELETE| `/api/BookList/{id}/books/{bookId}`        | Listeden kitap çıkarır (Auth, Sahip)             |
+
+---
+
+## 👍 Beğeni Sistemleri
+
+### 📑 Blog Yazısı Beğenileri
+
+| Metod | Endpoint                              | Açıklama                                          |
+|-------|---------------------------------------|---------------------------------------------------|
+| GET   | `/api/posts/{postId}/likes/count`     | Yazının toplam beğeni sayısı                      |
+| GET   | `/api/posts/{postId}/likes/is-liked`  | Kullanıcı beğenmiş mi? (Auth)                     |
+| POST  | `/api/posts/{postId}/likes/toggle`    | Beğeni durumunu değiştir (Auth)                   |
+
+### 📘 Kitap Beğenileri
+
+| Metod | Endpoint                              | Açıklama                                          |
+|-------|---------------------------------------|---------------------------------------------------|
+| GET   | `/api/books/{bookId}/likes/count`     | Kitabın toplam beğeni sayısı                      |
+| GET   | `/api/books/{bookId}/likes/is-liked`  | Kullanıcı beğenmiş mi? (Auth)                     |
+| POST  | `/api/books/{bookId}/likes/toggle`    | Beğeni durumunu değiştir (Auth)                   |
+| GET   | `/api/users/me/liked-books`           | Kullanıcının beğendiği kitap ID’leri (Auth)       |
+
+### 📋 Liste Beğenileri
+
+| Metod | Endpoint                              | Açıklama                                          |
+|-------|---------------------------------------|---------------------------------------------------|
+| GET   | `/api/lists/{listId}/likes/count`     | Listenin toplam beğeni sayısı                     |
+| GET   | `/api/lists/{listId}/likes/is-liked`  | Kullanıcı beğenmiş mi? (Auth)                     |
+| POST  | `/api/lists/{listId}/likes/toggle`    | Beğeni durumunu değiştir (Auth)  
+---
 ## 📂 Ek Bilgiler
 
 - Tüm uç noktalar detaylı şekilde README içerisinde listelenmiştir
