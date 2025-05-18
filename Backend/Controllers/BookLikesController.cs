@@ -19,11 +19,10 @@ namespace Backend.Controllers
             _bookLikesService = bookLikesService;
         }
 
-        /// <summary>
-        /// Bir kitabın beğeni sayısını getirir
-        /// </summary>
-        /// <returns>Beğeni sayısı</returns>
+
         [HttpGet("count")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetBookLikesCount(int bookId)
         {
             try
@@ -31,17 +30,16 @@ namespace Backend.Controllers
                 var likesCount = await _bookLikesService.GetBookLikesCountAsync(bookId);
                 return Ok(new { Count = likesCount });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Beğeni sayısı getirilirken bir hata oluştu");
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Giriş yapmış kullanıcının, kitabı beğenip beğenmediğini kontrol eder
-        /// </summary>
-        /// <returns>Beğeni durumu</returns>
+
         [HttpGet("is-liked")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
         public async Task<IActionResult> IsBookLikedByUser(int bookId)
         {
@@ -51,17 +49,16 @@ namespace Backend.Controllers
                 var isLiked = await _bookLikesService.IsBookLikedByUserAsync(userId, bookId);
                 return Ok(new { IsLiked = isLiked });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Beğeni durumu kontrol edilirken bir hata oluştu");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Bir kitabı beğenir veya beğeniyi kaldırır
-        /// </summary>
-        /// <returns>Güncel beğeni durumu</returns>
         [HttpPost("toggle")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> ToggleBookLike(int bookId)
         {
             try
@@ -80,11 +77,9 @@ namespace Backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Giriş yapmış kullanıcının beğendiği tüm kitapların ID'lerini getirir
-        /// </summary>
-        /// <returns>Beğenilen kitapların ID listesi</returns>
         [HttpGet("/api/users/me/liked-books")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetUserLikedBooks()
         {
             try
@@ -93,9 +88,9 @@ namespace Backend.Controllers
                 var likedBookIds = await _bookLikesService.GetUserLikedBookIdsAsync(userId);
                 return Ok(new { BookIds = likedBookIds });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Beğenilen kitaplar getirilirken bir hata oluştu");
+                return StatusCode(500, ex.Message);
             }
         }
     }
