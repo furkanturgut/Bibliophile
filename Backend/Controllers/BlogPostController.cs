@@ -21,12 +21,9 @@ namespace Backend.Controllers
             _blogPostService = blogPostService;
         }
 
-        /// <summary>
-        /// Tüm blog yazılarını getirir
-        /// </summary>
-        /// <returns>Blog yazılarının listesi</returns>
+       
         [HttpGet]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<BlogPostDto>),StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllBlogPosts()
         {
@@ -35,18 +32,15 @@ namespace Backend.Controllers
                 var blogPosts = await _blogPostService.GetAllBlogPostsAsync();
                 return Ok(blogPosts);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Belirtilen ID'ye sahip blog yazısını getirir
-        /// </summary>
-        /// <returns>ID'si verilen blog yazısı</returns>
+   
         [HttpGet("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BlogPostDto),StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetBlogPostById(int id)
@@ -54,29 +48,26 @@ namespace Backend.Controllers
             try
             {
                 var blogPost = await _blogPostService.GetBlogPostByIdAsync(id);
-                if (blogPost == null)
-                    return NotFound($"Blog yazısı ID {id} bulunamadı");
-                
                 return Ok(blogPost);
             }
-            catch (Exception)
+            catch(KeyNotFoundException)
             {
-                return StatusCode(500, "Internal server error");
+                return NotFound($"Blog yazısı ID {id} bulunamadı");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Belirtilen kullanıcının blog yazılarını getirir
-        /// </summary>
-        /// <returns>Kullanıcının blog yazılarının listesi</returns>
-        [HttpGet("author/{userId}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpGet("author/{authorId:int}")]
+        [ProducesResponseType(typeof(List<BlogPostDto>),StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetBlogPostsByAuthor(string userId)
+        public async Task<IActionResult> GetBlogPostsByAuthor(int authorId)
         {
             try
             {
-                var blogPosts = await _blogPostService.GetBlogPostsByAuthorIdAsync(userId);
+                var blogPosts = await _blogPostService.GetBlogPostsByAuthorIdAsync(authorId);
                 return Ok(blogPosts);
             }
             catch (Exception)
@@ -85,32 +76,9 @@ namespace Backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Son eklenen belirli sayıda blog yazısını getirir
-        /// </summary>
-        /// <returns>Son eklenen blog yazılarının listesi</returns>
-        [HttpGet("recent/{count:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetRecentBlogPosts(int count)
-        {
-            try
-            {
-                var blogPosts = await _blogPostService.GetRecentBlogPostsAsync(count);
-                return Ok(blogPosts);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, "Internal server error");
-            }
-        }
 
-        /// <summary>
-        /// Yeni bir blog yazısı oluşturur
-        /// </summary>
-        /// <returns>Oluşturulan blog yazısı</returns>
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(BlogPostDto),StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -132,21 +100,18 @@ namespace Backend.Controllers
             catch (Exception ex)
             {
                 
-                return StatusCode(500,"Internal Server Error" );
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Var olan bir blog yazısını günceller
-        /// </summary>
-        /// <returns>Güncellenen blog yazısı</returns>
-        [HttpPut("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+     
+        [HttpPut("{userId:int}")]
+        [ProducesResponseType(typeof(BlogPostDto),StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateBlogPost(int id, [FromBody] UpdateBlogPostDto blogPostDto)
+        public async Task<IActionResult> UpdateBlogPost(int userId, [FromBody] UpdateBlogPostDto blogPostDto)
         {
             try
             {
@@ -155,13 +120,15 @@ namespace Backend.Controllers
                     return BadRequest(ModelState);
                 }
 
-                // Yazı sahibi veya admin olduğunu kontrol etmek için burada bir yetkilendirme kontrolü yapılabilir
+                // Yazı sahibi veya admin olduğunu kontrol etmek için burada bir yetkilendirme kontrolü yapılabilir. Claims Service ile userId kismi silinecek. 
                 
-                var updatedBlogPost = await _blogPostService.UpdateBlogPostAsync(id, blogPostDto);
-                if (updatedBlogPost == null)
-                    return NotFound($"Blog yazısı ID {id} bulunamadı");
-                
+                var updatedBlogPost = await _blogPostService.UpdateBlogPostAsync(userId, blogPostDto);
+
                 return Ok(updatedBlogPost);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"Blog yazısı ID {userId} bulunamadı");
             }
             catch (Exception)
             {
@@ -169,26 +136,26 @@ namespace Backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Bir blog yazısını siler
-        /// </summary>
-        /// <returns>Silinen blog yazısı</returns>
-        [HttpDelete("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+
+        [HttpDelete("{postId:int}")]
+        [ProducesResponseType(typeof(BlogPostDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteBlogPost(int id)
+        public async Task<IActionResult> DeleteBlogPost(int postId)
         {
             try
             {
                 // Yazı sahibi veya admin olduğunu kontrol etmek için burada bir yetkilendirme kontrolü yapılabilir
 
-                var deletedBlogPost = await _blogPostService.DeleteBlogPostAsync(id);
-                if (deletedBlogPost == null)
-                    return NotFound($"Blog yazısı ID {id} bulunamadı");
+                var deletedBlogPost = await _blogPostService.DeleteBlogPostAsync(postId);
+                
                 
                 return Ok(deletedBlogPost);
+            }
+            catch(KeyNotFoundException)
+            {
+                return NotFound($"Blog yazısı ID {postId} bulunamadı");
             }
             catch (Exception)
             {
@@ -196,18 +163,15 @@ namespace Backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Blog yazısının var olup olmadığını kontrol eder
-        /// </summary>
-        /// <returns>Blog yazısının var olup olmadığı bilgisi</returns>
-        [HttpGet("exists/{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+    
+        [HttpGet("exists/{postId:int}")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> BlogPostExists(int id)
+        public async Task<IActionResult> BlogPostExists(int postId)
         {
             try
             {
-                var exists = await _blogPostService.BlogPostExistsAsync(id);
+                var exists = await _blogPostService.BlogPostExistsAsync(postId);
                 return Ok(exists);
             }
             catch (Exception)
