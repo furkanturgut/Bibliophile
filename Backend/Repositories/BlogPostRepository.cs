@@ -53,14 +53,17 @@ namespace Backend.Repositories
             }
         }
 
-        public async Task<List<BlogPost>> GetBlogPostsByAuthorIdAsync(string userId)
+        public async Task<List<BlogPost>> GetBlogPostsByAuthorIdAsync(int authorId)
         {
             try
             {
                 return await _dataContext.blogPosts
-                    .Where(b => b.UserId == userId)
+                    .Include(b => b.User)
+                    .Include(b => b.BookAuthorsOfPost)
+                    .ThenInclude(ba => ba.Author)
                     .Include(b => b.BooksOfPosts)
                     .ThenInclude(bp => bp.Book)
+                    .Where(b => b.BookAuthorsOfPost.Any(ba => ba.AuthorId == authorId))
                     .OrderByDescending(b => b.CreatedAt)
                     .ToListAsync();
             }
