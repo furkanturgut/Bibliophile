@@ -18,29 +18,28 @@ namespace Backend.Controllers
             _authorService = authorService;
         }
 
-        /// <summary>
-        /// Tüm yazarları getirir
-        /// </summary>
-        /// <returns>Yazarların listesi</returns>
+       
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<AuthorDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllAuthors()
         {
             try
             {
-                var authors = await _authorService.GetAllAuthorsAsync();
-                return Ok(authors);
+                var lAuthors = await _authorService.GetAllAuthorsAsync();
+                return Ok(lAuthors);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Belirtilen ID'ye sahip yazarı getirir
-        /// </summary>
-        /// <returns>ID'si verilen yazar</returns>
+
         [HttpGet("{id:int}")]
+        [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAuthorById(int id)
         {
             try
@@ -54,15 +53,16 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Yeni bir yazar oluşturur
-        /// </summary>
-        /// <returns>Oluşturulan yazar</returns>
+        
+
         [HttpPost]
+        [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateAuthor([FromBody] CreateAuthorDto authorDto)
         {
             try
@@ -77,16 +77,17 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Var olan bir yazarı günceller
-        /// </summary>
-        /// <returns>Güncellenen yazar</returns>
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateAuthor(int id, [FromBody] UpdateAuthorDto authorDto)
+        [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
+        public async Task<IActionResult> UpdateAuthor([FromQuery]int id, [FromBody] UpdateAuthorDto authorDto)
         {
             try
             {
@@ -104,16 +105,16 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Bir yazarı siler
-        /// </summary>
-        /// <returns>Silinen yazar</returns>
+    
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteAuthor(int id)
+        [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteAuthor([FromQuery]int id)
         {
             try
             {
@@ -126,15 +127,14 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Yazarın varlığını kontrol eder
-        /// </summary>
-        /// <returns>Yazarın var olup olmadığı bilgisi</returns>
+
         [HttpGet("exists/{id:int}")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AuthorExists(int id)
         {
             try
@@ -144,7 +144,7 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
     }
