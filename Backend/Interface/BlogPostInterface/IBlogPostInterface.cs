@@ -21,7 +21,7 @@ namespace Backend.Interface
         /// <summary>
         /// Belirtilen kullanıcının blog yazılarını getirir
         /// </summary>
-        Task<List<BlogPostDto>> GetBlogPostsByAuthorIdAsync(string userId);
+        Task<List<BlogPostDto>> GetBlogPostsByAuthorIdAsync(int authorId);
         
         /// <summary>
         /// Yeni bir blog yazısı ekler
@@ -43,9 +43,6 @@ namespace Backend.Interface
         /// </summary>
         Task<bool> BlogPostExistsAsync(int id);
         
-        /// <summary>
-        /// Son eklenen blog yazılarını getirir
-        /// </summary>
-        Task<List<BlogPostDto>> GetRecentBlogPostsAsync(int count);
+     
     }
 }
