@@ -96,17 +96,15 @@ namespace Backend.Repositories
         {
             try
             {
-              return await _datacontext.bookGenres
-                    .Where(g => g.Genre == genre)
-                    .Include(g => g.Book)
-                    .Select(g => g.Book)
-                    .ToListAsync();
-                    
-                
-            }
-            catch (Exception)
-            {
-                throw;
+            return await _datacontext.books
+                .Include(b => b.BookGenres)
+                .ThenInclude(bg => bg.Genre)
+                .Where(b => b.BookGenres.Any(bg => bg.Genre.Id == genre.Id))
+                .ToListAsync();
+        }
+        catch (Exception)
+        {
+            throw;
             }
         }
         public async Task<Book?> UpdateBookAsync(Book book)
