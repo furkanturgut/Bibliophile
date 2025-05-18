@@ -22,8 +22,8 @@ namespace Backend.Repositories
         {
             try
             {
-                var author = await _dataContext.authors.FindAsync(id);
-                return author;
+              return await _dataContext.authors.FindAsync(id);
+                
             }
             catch (Exception)
             {
@@ -35,8 +35,8 @@ namespace Backend.Repositories
         {
             try
             {
-                var authors = await _dataContext.authors.ToListAsync();
-                return authors;
+               return await _dataContext.authors.ToListAsync();
+                
             }
             catch (Exception)
             {

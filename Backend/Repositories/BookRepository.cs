@@ -48,11 +48,11 @@ namespace Backend.Repositories
         {
             try
             {
-                var books = await _datacontext.books
+                return await _datacontext.books
                     .Include(b => b.BookGenres)
                         .ThenInclude(bg => bg.Genre) 
                     .ToListAsync();
-                return books;
+                 
             }
             catch (Exception)
             {
@@ -64,14 +64,14 @@ namespace Backend.Repositories
         {
             try
             {
-                var book = await _datacontext.books
+               return await _datacontext.books
                     .Include(b => b.BookGenres)
                     .ThenInclude(bg => bg.Genre) 
                     .Where(b => b.Id == id)
                     .FirstOrDefaultAsync();
-                return book;
+                
             }
-            catch (Exception)
+            catch (Exception)  
             {
                 throw;
             }
@@ -82,8 +82,8 @@ namespace Backend.Repositories
             try
             {
                 
-                var books = await _datacontext.books.Where(b => b.Author== author).ToListAsync();
-                return books;
+                 return await _datacontext.books.Where(b => b.Author== author).ToListAsync();
+               
               
             }
             catch (Exception)
@@ -96,13 +96,13 @@ namespace Backend.Repositories
         {
             try
             {
-                var books = await _datacontext.bookGenres
+              return await _datacontext.bookGenres
                     .Where(g => g.Genre == genre)
                     .Include(g => g.Book)
                     .Select(g => g.Book)
                     .ToListAsync();
                     
-                return books;
+                
             }
             catch (Exception)
             {

@@ -136,10 +136,7 @@ namespace Backend.Repositories
         public async Task<Rating?> DeleteRatingAsync(Rating rating)
         {
             try
-            {
-                // Silmeden önce BookId'yi sakla
-                var bookId = rating.BookId;
-                
+            {  
                 _dataContext.ratings.Remove(rating);
                 await _dataContext.SaveChangesAsync();             
                 return rating;
