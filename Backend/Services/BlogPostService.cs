@@ -16,16 +16,12 @@ namespace Backend.Services
         private readonly IAuthorRepository _authorRepository;
         private readonly IMapper _mapper;
 
-        public BlogPostService(
-            IBlogPostRepository blogPostRepository,
-            IBookRepository bookRepository,
-            IAuthorRepository authorRepository,
-            IMapper mapper)
+        public BlogPostService(IBlogPostRepository blogPostRepository,IBookRepository bookRepository,IAuthorRepository authorRepository,IMapper mapper)
         {
-            _blogPostRepository = blogPostRepository;
-            _bookRepository = bookRepository;
-            _authorRepository = authorRepository;
-            _mapper = mapper;
+            this._blogPostRepository = blogPostRepository;
+            this._bookRepository = bookRepository;
+            this._authorRepository = authorRepository;
+            this._mapper = mapper;
         }
 
         public async Task<BlogPostDto?> GetBlogPostByIdAsync(int id)
@@ -34,7 +30,7 @@ namespace Backend.Services
             {
                 var blogPost = await _blogPostRepository.GetBlogPostByIdAsync(id);
                 if (blogPost == null)
-                    return null;
+                    throw new KeyNotFoundException();
                 
                 return _mapper.Map<BlogPostDto>(blogPost);
             }
@@ -57,11 +53,11 @@ namespace Backend.Services
             }
         }
 
-        public async Task<List<BlogPostDto>> GetBlogPostsByAuthorIdAsync(string userId)
+        public async Task<List<BlogPostDto>> GetBlogPostsByAuthorIdAsync(int authorId)
         {
             try
             {
-                var blogPosts = await _blogPostRepository.GetBlogPostsByAuthorIdAsync(userId);
+                var blogPosts = await _blogPostRepository.GetBlogPostsByAuthorIdAsync(authorId);
                 return _mapper.Map<List<BlogPostDto>>(blogPosts);
             }
             catch (Exception)
@@ -129,9 +125,9 @@ namespace Backend.Services
                 var updatedBlogPost = await _blogPostRepository.GetBlogPostByIdAsync(createdBlogPost.Id);
                 return _mapper.Map<BlogPostDto>(updatedBlogPost);
             }
-            catch (Exception ex)
+            catch (Exception )
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -141,7 +137,7 @@ namespace Backend.Services
             {
                 var existingBlogPost = await _blogPostRepository.GetBlogPostByIdAsync(id);
                 if (existingBlogPost == null)
-                    return null;
+                    throw new KeyNotFoundException();
                 
                 // Temel özellikleri güncelle
                 _mapper.Map(blogPostDto, existingBlogPost);
@@ -219,7 +215,7 @@ namespace Backend.Services
             {
                 var blogPost = await _blogPostRepository.GetBlogPostByIdAsync(id);
                 if (blogPost == null)
-                    return null;
+                    throw new KeyNotFoundException();
                 
                 var deletedBlogPost = await _blogPostRepository.DeleteBlogPostAsync(blogPost);
                 return _mapper.Map<BlogPostDto>(deletedBlogPost);
@@ -242,17 +238,6 @@ namespace Backend.Services
             }
         }
 
-        public async Task<List<BlogPostDto>> GetRecentBlogPostsAsync(int count)
-        {
-            try
-            {
-                var recentPosts = await _blogPostRepository.GetRecentBlogPostsAsync(count);
-                return _mapper.Map<List<BlogPostDto>>(recentPosts);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
+      
     }
 }
