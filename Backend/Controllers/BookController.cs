@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Backend.Dtos;
+using Backend.Dtos.BlogPostDtos;
 using Backend.Dtos.BookDtos;
 using Backend.Interface;
 using Microsoft.AspNetCore.Mvc;
@@ -19,11 +20,10 @@ namespace Backend.Controllers
             _bookService = bookService;
         }
 
-        /// <summary>
-        /// Get all books
-        /// </summary>
-        /// <returns>List of all books</returns>
+      
         [HttpGet]
+        [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllBooks()
         {
             try
@@ -33,37 +33,37 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Get a book by ID
-        /// </summary>
-        /// <returns>Book with specified ID</returns>
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetBookById(int id)
+
+        [HttpGet("{bookId:int}")]
+        [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetBookById(int bookId)
         {
             try
             {
-                var book = await _bookService.GetBookByIdAsync(id);
+                var book = await _bookService.GetBookByIdAsync(bookId);
                 return Ok(book);
             }
             catch (KeyNotFoundException)
             {
-                return NotFound($"Book with ID {id} not found");
+                return NotFound($"Book with ID {bookId} not found");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Create a new book
-        /// </summary>
-        /// <returns>Created book</returns>
+        
         [HttpPost]
+        [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateBook([FromBody] CreateBookDto bookDto)
         {
             try
@@ -82,12 +82,13 @@ namespace Backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Update an existing book
-        /// </summary>
-        /// <returns>Updated book</returns>
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> UpdateBook(int id, [FromBody] UpdateBookDto bookDto)
+
+        [HttpPut("{bookId:int}")]
+        [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateBook(int bookId, [FromBody] UpdateBookDto bookDto)
         {
             try
             {
@@ -96,46 +97,45 @@ namespace Backend.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var updatedBook = await _bookService.UpdateBookAsync(bookDto, id);
+                var updatedBook = await _bookService.UpdateBookAsync(bookDto, bookId);
                 return Ok(updatedBook);
             }
             catch (KeyNotFoundException)
             {
-                return NotFound($"Book with ID {id} not found");
+                return NotFound($"Book with ID {bookId} not found");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Delete a book
-        /// </summary>
-        /// <returns>Deleted book</returns>
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> DeleteBook(int id)
+
+        [HttpDelete("{bookId:int}")]
+        [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteBook(int bookId)
         {
             try
             {
-                var deletedBook = await _bookService.DeleteBookAsync(id);
+                var deletedBook = await _bookService.DeleteBookAsync(bookId);
                 return Ok(deletedBook);
             }
             catch (KeyNotFoundException)
             {
-                return NotFound($"Book with ID {id} not found");
+                return NotFound($"Book with ID {bookId} not found");
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Get books by author
-        /// </summary>
-        /// <returns>List of books by specified author</returns>
         [HttpGet("byAuthor/{authorId:int}")]
+        [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetBooksByAuthor(int authorId)
         {
             try
@@ -149,15 +149,14 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Get books by genre
-        /// </summary>
-        /// <returns>List of books in specified genre</returns>
         [HttpGet("byGenre/{genreId:int}")]
+        [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetBooksByGenre(int genreId)
         {
             try
@@ -171,7 +170,7 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error");
+                return StatusCode(500, ex.Message);
             }
         }
     }
