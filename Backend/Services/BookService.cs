@@ -48,9 +48,9 @@ namespace Backend.Services
                
                 return _mapper.Map<BookDto>(bookForReturn);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw ;
             }
         }
         public async Task<BookDto?> DeleteBookAsync(int id)
@@ -65,9 +65,9 @@ namespace Backend.Services
                 var deletedBook = _mapper.Map<BookDto>(await _bookRepository.DeleteBookAsync(bookToDelete));
                 return deletedBook;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
         
@@ -78,9 +78,9 @@ namespace Backend.Services
             {
                 return _mapper.Map<List<BookDto>>(await _bookRepository.GetAllBooksAsync());
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -95,9 +95,9 @@ namespace Backend.Services
                 }
                 return _mapper.Map<BookDto>(book);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -113,9 +113,9 @@ namespace Backend.Services
                 var books = await _bookRepository.GetBooksByAuthorAsync(author);
                 return _mapper.Map<List<BookDto>>(books);
             }
-            catch(Exception ex)
+            catch(Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -127,12 +127,12 @@ namespace Backend.Services
             {
                 throw new KeyNotFoundException();
             }
-            var books = _bookRepository.GetBooksByGenreAsync(genre);
+            var books = await _bookRepository.GetBooksByGenreAsync(genre);
             return _mapper.Map<List<BookDto>>(books);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -152,9 +152,9 @@ namespace Backend.Services
                 var updatedBook = await _bookRepository.UpdateBookAsync(bookToUpdate);
                 return _mapper.Map<BookDto>(updatedBook); 
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex; 
+                throw; 
             }
         }
 
