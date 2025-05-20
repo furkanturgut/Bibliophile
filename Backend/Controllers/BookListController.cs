@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Backend.Dtos.BookDtos;
 using Backend.Dtos.BookListDtos;
 using Backend.Interface;
 using Microsoft.AspNetCore.Authorization;
@@ -21,11 +22,10 @@ namespace Backend.Controllers
             _bookListService = bookListService;
         }
 
-        /// <summary>
-        /// Tüm kitap listelerini getirir
-        /// </summary>
-        /// <returns>Kitap listelerinin listesi</returns>
+
         [HttpGet]
+        [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllBookLists()
         {
             try
@@ -33,57 +33,55 @@ namespace Backend.Controllers
                 var bookLists = await _bookListService.GetAllBookListsAsync();
                 return Ok(bookLists);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Kitap listeleri getirilirken bir hata oluştu");
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// ID'ye göre kitap listesi getirir
-        /// </summary>
-        /// <returns>ID'ye göre kitap listesi</returns>
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetBookListById(int id)
+
+        [HttpGet("{bookId:int}")]
+        [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetBookListById(int bookId)
         {
             try
             {
-                var bookList = await _bookListService.GetBookListByIdAsync(id);
-                if (bookList == null)
-                    return NotFound($"ID {id} ile kitap listesi bulunamadı");
-                
+                var bookList = await _bookListService.GetBookListByIdAsync(bookId);
                 return Ok(bookList);
             }
-            catch (Exception)
+            catch (KeyNotFoundException)
             {
-                return StatusCode(500, "Kitap listesi getirilirken bir hata oluştu");
+                 return NotFound($"ID {bookId} ile kitap listesi bulunamadı");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Kullanıcıya göre kitap listelerini getirir
-        /// </summary>
-        /// <returns>Kullanıcıya ait kitap listeleri</returns>
+
         [HttpGet("user/{userId}")]
-        public async Task<IActionResult> GetBookListsByUser(string userId)
+        [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetBookListsByUserId(string userId)
         {
             try
             {
                 var bookLists = await _bookListService.GetBookListsByUserIdAsync(userId);
                 return Ok(bookLists);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Kitap listeleri getirilirken bir hata oluştu");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Giriş yapmış kullanıcıya ait kitap listelerini getirir
-        /// </summary>
-        /// <returns>Kullanıcıya ait kitap listeleri</returns>
+
         [HttpGet("my-lists")]
-        [Authorize]
+        [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetMyBookLists()
         {
             try
@@ -92,17 +90,16 @@ namespace Backend.Controllers
                 var bookLists = await _bookListService.GetBookListsByUserIdAsync(userId);
                 return Ok(bookLists);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Kitap listeleri getirilirken bir hata oluştu");
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Popüler kitap listelerini getirir
-        /// </summary>
-        /// <returns>Popüler kitap listeleri</returns>
+
         [HttpGet("popular/{count:int}")]
+        [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPopularBookLists(int count)
         {
             try
@@ -110,18 +107,17 @@ namespace Backend.Controllers
                 var bookLists = await _bookListService.GetPopularBookListsAsync(count);
                 return Ok(bookLists);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Popüler listeler getirilirken bir hata oluştu");
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Yeni bir kitap listesi oluşturur
-        /// </summary>
-        /// <returns>Oluşturulan kitap listesi</returns>
-        [HttpPost]
 
+        [HttpPost]
+        [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateBookList([FromBody] CreateBookListDto createBookListDto)
         {
             try
@@ -133,21 +129,22 @@ namespace Backend.Controllers
 
                 var userId = "02017753-34b3-4c58-a873-98b46937fef2";
                 var createdBookList = await _bookListService.CreateBookListAsync(createBookListDto, userId);
-                
+
                 return CreatedAtAction(nameof(GetBookListById), new { id = createdBookList.Id }, createdBookList);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Kitap listesi oluşturulurken bir hata oluştu");
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Var olan bir kitap listesini günceller
-        /// </summary>
-        /// <returns>Güncellenen kitap listesi</returns>
-        [HttpPut("{id:int}")]
 
+        [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> UpdateBookList(int id, [FromBody] UpdateBookListDto updateBookListDto)
         {
             try
@@ -157,17 +154,17 @@ namespace Backend.Controllers
                     return BadRequest(ModelState);
                 }
 
-              
+
                 var userId = "02017753-34b3-4c58-a873-98b46937fef2";
                 var isOwner = await _bookListService.IsUserListOwnerAsync(id, userId);
-                
+
                 if (!isOwner && !User.IsInRole("Admin"))
                     return Forbid("Bu listeyi düzenleme yetkiniz yok");
 
                 var updatedBookList = await _bookListService.UpdateBookListAsync(id, updateBookListDto);
                 if (updatedBookList == null)
                     return NotFound($"ID {id} ile kitap listesi bulunamadı");
-                
+
                 return Ok(updatedBookList);
             }
             catch (Exception)
@@ -176,41 +173,46 @@ namespace Backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Bir kitap listesini siler
-        /// </summary>
-        /// <returns>Silinen kitap listesi</returns>
+       
         [HttpDelete("{id:int}")]
-
-        public async Task<IActionResult> DeleteBookList(int id)
+        [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> DeleteBookList(int bookId)
         {
             try
             {
-               
+
                 var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var isOwner = await _bookListService.IsUserListOwnerAsync(id, userId);
-                
+                var isOwner = await _bookListService.IsUserListOwnerAsync(bookId, userId);
+
                 if (!isOwner && !User.IsInRole("Admin"))
                     return Forbid("Bu listeyi silme yetkiniz yok");
 
-                var deletedBookList = await _bookListService.DeleteBookListAsync(id);
-                if (deletedBookList == null)
-                    return NotFound($"ID {id} ile kitap listesi bulunamadı");
-                
+                var deletedBookList = await _bookListService.DeleteBookListAsync(bookId);
+
+
                 return Ok(deletedBookList);
             }
-            catch (Exception)
+            catch (KeyNotFoundException)
             {
-                return StatusCode(500, "Kitap listesi silinirken bir hata oluştu");
+                return NotFound($"ID {bookId} ile kitap listesi bulunamadı");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Listeye kitap ekler
-        /// </summary>
-        /// <returns>Güncellenmiş kitap listesi</returns>
-        [HttpPost("{id:int}/books")]
 
+        [HttpPost("{id:int}/books")]
+        [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AddBookToList(int id, [FromBody] AddBookToListDto addBookToListDto)
         {
             try
@@ -223,7 +225,7 @@ namespace Backend.Controllers
                 // Liste sahibi veya admin olup olmadığını kontrol et
                 var userId = "02017753-34b3-4c58-a873-98b46937fef2";
                 var isOwner = await _bookListService.IsUserListOwnerAsync(id, userId);
-                
+
                 if (!isOwner && !User.IsInRole("Admin"))
                     return Forbid("Bu listeye kitap ekleme yetkiniz yok");
 
@@ -238,38 +240,39 @@ namespace Backend.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Listeye kitap eklenirken bir hata oluştu");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Listeden kitap çıkarır
-        /// </summary>
-        /// <returns>Güncellenmiş kitap listesi</returns>
-        [HttpDelete("{id:int}/books/{bookId:int}")]
 
-        public async Task<IActionResult> RemoveBookFromList(int id, int bookId)
+        [HttpDelete("{listId:int}/books/{bookId:int}")]
+        [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> RemoveBookFromList(int listId, int bookId)
         {
             try
             {
                 // Liste sahibi veya admin olup olmadığını kontrol et
                 var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var isOwner = await _bookListService.IsUserListOwnerAsync(id, userId);
-                
+                var isOwner = await _bookListService.IsUserListOwnerAsync(listId, userId);
+
                 if (!isOwner && !User.IsInRole("Admin"))
                     return Forbid("Bu listeden kitap silme yetkiniz yok");
 
-                var updatedBookList = await _bookListService.RemoveBookFromListAsync(id, bookId);
-                if (updatedBookList == null)
-                    return NotFound($"ID {id} ile kitap listesi bulunamadı");
-                
+                var updatedBookList = await _bookListService.RemoveBookFromListAsync(listId, bookId);
                 return Ok(updatedBookList);
             }
-            catch (Exception)
+            catch (KeyNotFoundException)
             {
-                return StatusCode(500, "Listeden kitap silinirken bir hata oluştu");
+                return NotFound($"ID {listId} ile kitap listesi bulunamadı");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
         }
     }
