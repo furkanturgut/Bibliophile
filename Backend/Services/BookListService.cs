@@ -37,13 +37,13 @@ namespace Backend.Services
             }
         }
 
-        public async Task<BookListDto?> GetBookListByIdAsync(int id)
+        public async Task<BookListDto?> GetBookListByIdAsync(int bookId)
         {
             try
             {
-                var bookList = await _bookListRepository.GetBookListByIdAsync(id);
+                var bookList = await _bookListRepository.GetBookListByIdAsync(bookId);
                 if (bookList == null)
-                    return null;
+                    throw new KeyNotFoundException();
                     
                 return _mapper.Map<BookListDto>(bookList);
             }
@@ -104,13 +104,13 @@ namespace Backend.Services
             }
         }
 
-        public async Task<BookListDto?> DeleteBookListAsync(int id)
+        public async Task<BookListDto?> DeleteBookListAsync(int bookId)
         {
             try
             {
-                var bookList = await _bookListRepository.GetBookListByIdAsync(id);
+                var bookList = await _bookListRepository.GetBookListByIdAsync(bookId);
                 if (bookList == null)
-                    return null;
+                    throw new KeyNotFoundException();
                     
                 var deletedBookList = await _bookListRepository.DeleteBookListAsync(bookList);
                 return _mapper.Map<BookListDto>(deletedBookList);
@@ -198,7 +198,7 @@ namespace Backend.Services
                 // Güncellenmiş listeyi getir
                 var updatedBookList = await _bookListRepository.GetBookListByIdAsync(listId);
                 if (updatedBookList == null)
-                    return null;
+                    throw new KeyNotFoundException();
                     
                 return _mapper.Map<BookListDto>(updatedBookList);
             }
