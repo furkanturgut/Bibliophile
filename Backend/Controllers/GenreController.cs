@@ -19,11 +19,10 @@ namespace Backend.Controllers
             _genreService = genreService;
         }
 
-        /// <summary>
-        /// Get all available genres
-        /// </summary>
-        /// <returns>List of all genres</returns>
+
         [HttpGet]
+        [ProducesResponseType(typeof(List<GenreDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllGenres()
         {
             try
@@ -31,42 +30,40 @@ namespace Backend.Controllers
                 var genres = await _genreService.GetAllGenres();
                 return Ok(genres);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error while retrieving genres");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Get a genre by its ID
-        /// </summary>
-        /// <returns>The genre with the specified ID</returns>
-        [HttpGet("{id:int}")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
+        
+        [HttpGet("{genreId:int}")]
+        [ProducesResponseType(typeof(GenreDto),StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetGenreById(int id)
+        public async Task<IActionResult> GetGenreById(int genreId)
         {
             try
             {
-                var genre = await _genreService.GetGenreById(id);
+                var genre = await _genreService.GetGenreById(genreId);
                 return Ok(genre);
             }
             catch (KeyNotFoundException)
             {
-                return NotFound($"Genre with ID {id} not found");
+                return NotFound($"Genre with ID {genreId} not found");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error while retrieving the genre");
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Search for genres by name
-        /// </summary>
-        /// <returns>Genres matching the search term</returns>
+
         [HttpGet("search")]
+        [ProducesResponseType(typeof(List<GenreDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetGenresByName([FromQuery] string name)
         {
             try
@@ -83,27 +80,26 @@ namespace Backend.Controllers
             {
                 return NotFound($"No genres found matching '{name}'");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error while searching for genres");
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Check if a genre exists
-        /// </summary>
-        /// <returns>True if the genre exists, false otherwise</returns>
-        [HttpGet("exists/{id:int}")]
-        public async Task<IActionResult> GenreExists(int id)
+
+        [HttpGet("exists/{genreId:int}")]
+        [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GenreExists(int genreId)
         {
             try
             {
-                var exists = await _genreService.GenreExist(id);
+                var exists = await _genreService.GenreExist(genreId);
                 return Ok(exists);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Internal server error while checking genre existence");
+                return StatusCode(500, ex.Message);
             }
         }
     }
