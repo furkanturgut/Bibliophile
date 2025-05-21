@@ -21,11 +21,9 @@ namespace Backend.Controllers
             _ratingService = ratingService;
         }
 
-        /// <summary>
-        /// Tüm değerlendirmeleri getirir
-        /// </summary>
-        /// <returns>Değerlendirmelerin listesi</returns>
         [HttpGet]
+        [ProducesResponseType(typeof(List<RatingDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetAllRatings()
         {
             try
@@ -33,38 +31,37 @@ namespace Backend.Controllers
                 var ratings = await _ratingService.GetAllRatingsAsync();
                 return Ok(ratings);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Değerlendirmeleri getirirken bir hata oluştu");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// ID'ye göre değerlendirme getirir
-        /// </summary>
-        /// <returns>ID'ye göre değerlendirme</returns>
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetRatingById(int id)
+
+        [HttpGet("{ratingId:int}")]
+        [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> GetRatingById(int ratingId)
         {
             try
             {
-                var rating = await _ratingService.GetRatingByIdAsync(id);
-                if (rating == null)
-                    return NotFound($"ID {id} ile değerlendirme bulunamadı");
-                
+                var rating = await _ratingService.GetRatingByIdAsync(ratingId);
                 return Ok(rating);
             }
-            catch (Exception)
+            catch (KeyNotFoundException)
             {
-                return StatusCode(500, "Değerlendirme getirirken bir hata oluştu");
+                return NotFound($"ID {ratingId} ile değerlendirme bulunamadı");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Kitaba göre değerlendirmeleri getirir
-        /// </summary>     
-        /// <returns>Kitaba ait değerlendirmeler</returns>
         [HttpGet("book/{bookId:int}")]
+        [ProducesResponseType(typeof(List<RatingDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetRatingsByBook(int bookId)
         {
             try
@@ -72,18 +69,16 @@ namespace Backend.Controllers
                 var ratings = await _ratingService.GetRatingsByBookAsync(bookId);
                 return Ok(ratings);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Kitap değerlendirmelerini getirirken bir hata oluştu");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Kullanıcıya göre değerlendirmeleri getirir
-        /// </summary>
 
-        /// <returns>Kullanıcıya ait değerlendirmeler</returns>
         [HttpGet("user/{userId}")]
+        [ProducesResponseType(typeof(List<RatingDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
        
         public async Task<IActionResult> GetRatingsByUser(string userId)
         {
@@ -92,18 +87,16 @@ namespace Backend.Controllers
                 var ratings = await _ratingService.GetRatingsByUserAsync(userId);
                 return Ok(ratings);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Kullanıcı değerlendirmelerini getirirken bir hata oluştu");
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Kullanıcının kendi değerlendirmelerini getirir
-        /// </summary>
-        /// <returns>Giriş yapmış kullanıcıya ait değerlendirmeler</returns>
-        [HttpGet("my-ratings")]
 
+        [HttpGet("my-ratings")]
+        [ProducesResponseType(typeof(List<RatingDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetMyRatings()
         {
             try
@@ -112,43 +105,40 @@ namespace Backend.Controllers
                 var ratings = await _ratingService.GetRatingsByUserAsync(userId);
                 return Ok(ratings);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Değerlendirmelerinizi getirirken bir hata oluştu");
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Kullanıcının belirli bir kitap için değerlendirmesini getirir
-        /// </summary>
-        /// <returns>Kullanıcının kitap değerlendirmesi</returns>
-        [HttpGet("my-rating/book/{bookId:int}")]
-        [Authorize]
 
+        [HttpGet("my-rating/book/{bookId:int}")]
+        [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetMyRatingForBook(int bookId)
         {
             try
             {
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 var rating = await _ratingService.GetRatingByUserAndBookAsync(userId, bookId);
-                
-                if (rating == null)
-                    return NotFound($"Bu kitap için değerlendirmeniz bulunamadı");
-                
                 return Ok(rating);
             }
-            catch (Exception)
+            catch (KeyNotFoundException)
             {
-                return StatusCode(500, "Değerlendirme getirirken bir hata oluştu");
+                return NotFound($"Bu kitap için değerlendirmeniz bulunamadı");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Yeni bir değerlendirme ekler
-        /// </summary>
-        /// <returns>Oluşturulan değerlendirme</returns>
+
         [HttpPost]
-     
+        [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> AddRating([FromBody] CreateRatingDto ratingDto)
         {
             try
@@ -160,7 +150,7 @@ namespace Backend.Controllers
 
                 var userId = "02017753-34b3-4c58-a873-98b46937fef2";
                 var createdRating = await _ratingService.AddRatingAsync(ratingDto, userId);
-                
+
                 return CreatedAtAction(nameof(GetRatingById), new { id = createdRating.Id }, createdRating);
             }
             catch (InvalidOperationException ex)
@@ -173,14 +163,14 @@ namespace Backend.Controllers
             }
         }
 
-        /// <summary>
-        /// Var olan bir değerlendirmeyi günceller
-        /// </summary>
 
-        /// <returns>Güncellenen değerlendirme</returns>
-        [HttpPut("{id:int}")]
-
-        public async Task<IActionResult> UpdateRating(int id, [FromBody] UpdateRatingDto ratingDto)
+        [HttpPut("{ratingId:int}")]
+        [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> UpdateRating(int ratingId, [FromBody] UpdateRatingDto ratingDto)
         {
             try
             {
@@ -190,57 +180,56 @@ namespace Backend.Controllers
                 }
 
                 // Değerlendirmenin sahibi olup olmadığını kontrol et
-                var rating = await _ratingService.GetRatingByIdAsync(id);
-                if (rating == null)
-                    return NotFound($"ID {id} ile değerlendirme bulunamadı");
-                
+                var rating = await _ratingService.GetRatingByIdAsync(ratingId);
+
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (rating.UserId != userId && !User.IsInRole("Admin"))
                     return Forbid("Bu değerlendirmeyi düzenleme yetkiniz yok");
 
-                var updatedRating = await _ratingService.UpdateRatingAsync(id, ratingDto);
+                var updatedRating = await _ratingService.UpdateRatingAsync(ratingId, ratingDto);
                 return Ok(updatedRating);
             }
-            catch (Exception)
+            catch (KeyNotFoundException)
             {
-                return StatusCode(500, "Değerlendirme güncellenirken bir hata oluştu");
+                return NotFound($"ID {ratingId} ile değerlendirme bulunamadı");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Bir değerlendirmeyi siler
-        /// </summary>
+        [HttpDelete("{ratingId:int}")]
+        [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
 
-        /// <returns>Silinen değerlendirme</returns>
-        [HttpDelete("{id:int}")]
-
-
-        public async Task<IActionResult> DeleteRating(int id)
+        public async Task<IActionResult> DeleteRating(int ratingId)
         {
             try
             {
                 // Değerlendirmenin sahibi olup olmadığını kontrol et
-                var rating = await _ratingService.GetRatingByIdAsync(id);
-                if (rating == null)
-                    return NotFound($"ID {id} ile değerlendirme bulunamadı");
-                
+                var rating = await _ratingService.GetRatingByIdAsync(ratingId);
+
                 var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
                 if (rating.UserId != userId && !User.IsInRole("Admin"))
                     return Forbid("Bu değerlendirmeyi silme yetkiniz yok");
 
-                var deletedRating = await _ratingService.DeleteRatingAsync(id);
+                var deletedRating = await _ratingService.DeleteRatingAsync(ratingId);
                 return Ok(deletedRating);
             }
-            catch (Exception)
+            catch (KeyNotFoundException)
             {
-                return StatusCode(500, "Değerlendirme silinirken bir hata oluştu");
+                return NotFound($"ID {ratingId} ile değerlendirme bulunamadı");
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500,ex.Message);
             }
         }
 
-        /// <summary>
-        /// Bir kitabın ortalama puanını hesaplar
-        /// </summary>
-        /// <returns>Kitabın ortalama puanı</returns>
+
         [HttpGet("average/{bookId:int}")]
 
         public async Task<IActionResult> CalculateAverageRating(int bookId)
@@ -250,9 +239,9 @@ namespace Backend.Controllers
         
                 return Ok(new { BookId = bookId });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Ortalama puan hesaplanırken bir hata oluştu");
+                return StatusCode(500,ex.Message);
             }
         }
     }
