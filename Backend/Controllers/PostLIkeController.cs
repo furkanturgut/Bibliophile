@@ -19,11 +19,10 @@ namespace Backend.Controllers
             _postLikeService = postLikeService;
         }
 
-        /// <summary>
-        /// Bir blog yazısının beğeni sayısını getirir
-        /// </summary>
-        /// <returns>Beğeni sayısı</returns>
+
         [HttpGet("count")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> GetPostLikesCount(int postId)
         {
             try
@@ -31,17 +30,16 @@ namespace Backend.Controllers
                 var likesCount = await _postLikeService.GetPostLikesCountAsync(postId);
                 return Ok(new { Count = likesCount });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Beğeni sayısı getirilirken bir hata oluştu");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Giriş yapmış kullanıcının, blog yazısını beğenip beğenmediğini kontrol eder
-        /// </summary>
-        /// <returns>Beğeni durumu</returns>
+
         [HttpGet("is-liked")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> IsPostLikedByUser(int postId)
         {
             try
@@ -50,17 +48,17 @@ namespace Backend.Controllers
                 var isLiked = await _postLikeService.IsPostLikedByUserAsync(userId, postId);
                 return Ok(new { IsLiked = isLiked });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Beğeni durumu kontrol edilirken bir hata oluştu");
+                return StatusCode(500, ex.Message);
             }
         }
 
-        /// <summary>
-        /// Bir blog yazısını beğenir veya beğeniyi kaldırır
-        /// </summary>
-        /// <returns>Güncel beğeni durumu</returns>
+
         [HttpPost("toggle")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> TogglePostLike(int postId)
         {
             try
@@ -73,9 +71,9 @@ namespace Backend.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, "Beğeni işlemi sırasında bir hata oluştu");
+                return StatusCode(500,ex.Message);
             }
         }
     }
