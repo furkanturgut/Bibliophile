@@ -26,9 +26,9 @@ namespace Backend.Services
             {
                 return _genreRepository.GenreExist(genreId);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -39,9 +39,9 @@ namespace Backend.Services
                 var genres = await _genreRepository.GetAllGenres();
                 return _mapper.Map<List<GenreDto>>(genres);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -49,16 +49,12 @@ namespace Backend.Services
         {
             try
             {
-                var genre = await _genreRepository.GetGenreById(genreId);
-                if (genre is null)
-                {
-                    throw new KeyNotFoundException();
-                }
+                var genre = await _genreRepository.GetGenreById(genreId) ?? throw new KeyNotFoundException();
                 return _mapper.Map<GenreDto>(genre);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 
@@ -66,16 +62,12 @@ namespace Backend.Services
         {
             try
             {
-                var genres = await _genreRepository.GetGenreByName(name);
-                if (genres is null)
-                {
-                    throw new KeyNotFoundException();
-                }
+                var genres = await _genreRepository.GetGenreByName(name) ?? throw new KeyNotFoundException();
                 return _mapper.Map<List<GenreDto>>(genres);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
     }
