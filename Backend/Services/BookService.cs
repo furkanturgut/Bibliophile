@@ -99,13 +99,9 @@ namespace Backend.Services
         {
             try
             {
-                var author = await _authorRepository.GetAuthorById(authorId);
-                if (author is null)
-                {
-                    throw new  KeyNotFoundException();
-                }
+                var author = await _authorRepository.GetAuthorById(authorId) ?? throw new  KeyNotFoundException();
                 var books = await _bookRepository.GetBooksByAuthorAsync(author);
-                return _mapper.Map<List<BookDto>>(books);
+                return _mapper.Map<List<BookDto?>>(books);
             }
             catch(Exception)
             {
@@ -116,13 +112,9 @@ namespace Backend.Services
         public async Task<List<BookDto?>> GetBooksByGenreAsync(int genreId)
         {
             try{
-            var genre = await _genreRepository.GetGenreById(genreId);
-            if (genre is null)
-            {
-                throw new KeyNotFoundException();
-            }
-            var books = await _bookRepository.GetBooksByGenreAsync(genre);
-            return _mapper.Map<List<BookDto>>(books);
+            var genre = await _genreRepository.GetGenreById(genreId) ?? throw new KeyNotFoundException();
+                var books = await _bookRepository.GetBooksByGenreAsync(genre);
+            return _mapper.Map<List<BookDto?>>(books);
             }
             catch (Exception)
             {
@@ -136,11 +128,7 @@ namespace Backend.Services
         {
             try
             {
-                var existingBook = await _bookRepository.GetBookByIdAsync(Id);
-                if (existingBook == null)
-                {
-                    throw new KeyNotFoundException();
-                }
+                var existingBook = await _bookRepository.GetBookByIdAsync(Id) ?? throw new KeyNotFoundException();
                 var bookToUpdate = _mapper.Map<Book>(bookDto);
                 bookToUpdate.Id=Id;
                 var updatedBook = await _bookRepository.UpdateBookAsync(bookToUpdate);
