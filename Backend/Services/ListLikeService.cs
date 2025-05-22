@@ -47,11 +47,7 @@ namespace Backend.Services
             try
             {
                 // Listenin var olup olmadığını kontrol et
-                var list = await _bookListRepository.GetBookListByIdAsync(listId);
-                if (list == null)
-                {
-                    throw new KeyNotFoundException($"ID {listId} ile liste bulunamadı");
-                }
+                var list = await _bookListRepository.GetBookListByIdAsync(listId) ?? throw new KeyNotFoundException($"ID {listId} ile liste bulunamadı");
 
                 // Kullanıcının listeyi beğenip beğenmediğini kontrol et
                 var existingLike = await _listLikeRepository.GetListLikeByUserAndListAsync(userId, listId);
