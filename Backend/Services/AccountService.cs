@@ -41,9 +41,9 @@ namespace Backend.Services
                 return users;
                 
             }
-            catch (Exception ex)
+            catch (Exception )
             { 
-                throw ex;
+                throw ;
             }
         }
     }
