@@ -30,22 +30,24 @@ namespace Backend.Services
             {
                 var mappedBook = _mapper.Map<Book>(bookDto);
                 var bookForReturn = await _bookRepository.AddBookAsync(mappedBook);
-                bookForReturn.BookGenres??= new List<BookGenre>();
-                 foreach (int genreId in bookDto.GenreIds)
+                if (bookForReturn is not null)
                 {
-                    if (await _genreRepository.GenreExist(genreId))
+                    bookForReturn.BookGenres ??= new List<BookGenre>();
+                    foreach (int genreId in bookDto.GenreIds)
                     {
-                        var bookgenre = new BookGenre
+                        if (await _genreRepository.GenreExist(genreId))
                         {
-                            GenreId=genreId,
-                            BookId=mappedBook.Id
+                            var bookgenre = new BookGenre
+                            {
+                                GenreId = genreId,
+                                BookId = mappedBook.Id
 
-                        };
-                         bookForReturn.BookGenres.Add(bookgenre);
+                            };
+                            bookForReturn.BookGenres.Add(bookgenre);
+                        }
                     }
+                    await _bookRepository.UpdateBookAsync(bookForReturn);
                 }
-                await _bookRepository.UpdateBookAsync(bookForReturn);
-               
                 return _mapper.Map<BookDto>(bookForReturn);
             }
             catch (Exception)
@@ -57,11 +59,7 @@ namespace Backend.Services
         {
             try
             {
-                var bookToDelete = await _bookRepository.GetBookByIdAsync(id);
-                if (bookToDelete == null)
-                {
-                    throw new KeyNotFoundException();
-                }
+                var bookToDelete = await _bookRepository.GetBookByIdAsync(id) ?? throw new KeyNotFoundException();
                 var deletedBook = _mapper.Map<BookDto>(await _bookRepository.DeleteBookAsync(bookToDelete));
                 return deletedBook;
             }
@@ -88,11 +86,7 @@ namespace Backend.Services
         {
             try
             {
-                var book = await _bookRepository.GetBookByIdAsync(id);
-                if (book is null)
-                {
-                    throw new KeyNotFoundException();
-                }
+                var book = await _bookRepository.GetBookByIdAsync(id) ?? throw new KeyNotFoundException();
                 return _mapper.Map<BookDto>(book);
             }
             catch (Exception)
