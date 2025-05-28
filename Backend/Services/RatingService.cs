@@ -14,9 +14,7 @@ namespace Backend.Services
         private readonly IBookRepository _bookRepository;
         private readonly IMapper _mapper;
 
-        public RatingService(IRatingRepository ratingRepository, 
-                           IBookRepository bookRepository,
-                           IMapper mapper)
+        public RatingService(IRatingRepository ratingRepository,IBookRepository bookRepository,IMapper mapper)
         {
             _ratingRepository = ratingRepository;
             _bookRepository = bookRepository;
@@ -40,10 +38,7 @@ namespace Backend.Services
         {
             try
             {
-                var rating = await _ratingRepository.GetRatingByIdAsync(id);
-                if (rating == null)
-                    return null;
-                    
+                var rating = await _ratingRepository.GetRatingByIdAsync(id) ?? throw new KeyNotFoundException();
                 return _mapper.Map<RatingDto>(rating);
             }
             catch (Exception)
@@ -154,9 +149,8 @@ namespace Backend.Services
         {
             try
             {
-                var rating = await _ratingRepository.GetRatingByIdAsync(id);
-                if (rating == null)
-                    return null;
+                var rating = await _ratingRepository.GetRatingByIdAsync(id) ?? throw new KeyNotFoundException();
+                
                     
                 var bookId = rating.BookId;
                 
@@ -182,7 +176,7 @@ namespace Backend.Services
             try
             {
                 
-                // Kitabı güncelle
+                // ortalama puani burada guncellenecek. EKLE!!!!!!!!
                 var book = await _bookRepository.GetBookByIdAsync(bookId);
                 if (book != null)
                 {

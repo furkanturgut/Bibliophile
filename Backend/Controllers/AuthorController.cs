@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Backend.Dtos.AuthorDto;
+using Backend.Extensions;
 using Backend.Interface.AuthorInterface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -18,10 +20,11 @@ namespace Backend.Controllers
             _authorService = authorService;
         }
 
-       
+
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<AuthorDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> GetAllAuthors()
         {
             try
@@ -40,6 +43,7 @@ namespace Backend.Controllers
         [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> GetAuthorById(int id)
         {
             try
@@ -57,12 +61,14 @@ namespace Backend.Controllers
             }
         }
 
-        
+
 
         [HttpPost]
         [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> CreateAuthor([FromBody] CreateAuthorDto authorDto)
         {
             try
@@ -71,9 +77,13 @@ namespace Backend.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
-                var createdAuthor = await _authorService.AddAuthorAsync(authorDto);
+                string userName = User.GetUserName();
+                var createdAuthor = await _authorService.AddAuthorAsync(authorDto, userName);
                 return CreatedAtAction(nameof(GetAuthorById), new { id = createdAuthor.Id }, createdAuthor);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
             }
             catch (Exception ex)
             {
@@ -86,8 +96,9 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-
-        public async Task<IActionResult> UpdateAuthor([FromQuery]int id, [FromBody] UpdateAuthorDto authorDto)
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
+        public async Task<IActionResult> UpdateAuthor([FromQuery] int id, [FromBody] UpdateAuthorDto authorDto)
         {
             try
             {
@@ -95,9 +106,13 @@ namespace Backend.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
-                var updatedAuthor = await _authorService.UpdateAuthorAsync(id, authorDto);
+                string userName = User.GetUserName();
+                var updatedAuthor = await _authorService.UpdateAuthorAsync(id, authorDto, userName);
                 return Ok(updatedAuthor);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
             }
             catch (KeyNotFoundException)
             {
@@ -109,17 +124,24 @@ namespace Backend.Controllers
             }
         }
 
-    
+
         [HttpDelete("{id:int}")]
         [ProducesResponseType(typeof(AuthorDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> DeleteAuthor([FromQuery]int id)
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
+        public async Task<IActionResult> DeleteAuthor([FromQuery] int id)
         {
             try
             {
-                var deletedAuthor = await _authorService.DeleteAuthorAsync(id);
+                string userName = User.GetUserName();
+                var deletedAuthor = await _authorService.DeleteAuthorAsync(id, userName);
                 return Ok(deletedAuthor);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
             }
             catch (KeyNotFoundException)
             {
@@ -135,6 +157,7 @@ namespace Backend.Controllers
         [HttpGet("exists/{id:int}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> AuthorExists(int id)
         {
             try

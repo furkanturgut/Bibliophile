@@ -14,9 +14,9 @@ namespace Backend.Interface
        
         Task<BookListDto?> GetBookListByIdAsync(int bookId);
         
-        Task<List<BookListDto>> GetBookListsByUserIdAsync(string userId);
+        Task<List<BookListDto>> GetBookListsByUserIdAsync(string userName);
         
-        Task<BookListDto> CreateBookListAsync(CreateBookListDto createBookListDto, string userId);
+        Task<BookListDto> CreateBookListAsync(CreateBookListDto createBookListDto, string userName);
         
         Task<BookListDto?> UpdateBookListAsync(int id, UpdateBookListDto updateBookListDto);
         
@@ -30,7 +30,7 @@ namespace Backend.Interface
         Task<bool> BookListExistsAsync(int id);
         
       
-        Task<bool> IsUserListOwnerAsync(int listId, string userId);
+        Task<bool> IsUserListOwnerAsync(int listId, string userName);
         
        
         Task<BookListDto> AddBookToListAsync(int listId, AddBookToListDto addBookToListDto);

@@ -15,8 +15,8 @@ namespace Backend.Interface
         
         Task<List<BookDto?>> GetBooksByAuthorAsync(int author);
         Task<List<BookDto?>> GetBooksByGenreAsync(int genreId);
-        Task<BookDto?> AddBookAsync(CreateBookDto book);
-        Task<BookDto?> UpdateBookAsync(UpdateBookDto book, int Id);
-        Task<BookDto?> DeleteBookAsync(int id);
+        Task<BookDto?> AddBookAsync(CreateBookDto book, string userName);
+        Task<BookDto?> UpdateBookAsync(UpdateBookDto book, int Id, string userName);
+        Task<BookDto?> DeleteBookAsync(int id, string userName);
     }
     }

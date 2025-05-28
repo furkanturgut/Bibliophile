@@ -7,6 +7,7 @@ using Backend.Dtos;
 using Backend.Dtos.BookDtos;
 using Backend.Interface;
 using Backend.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Services
 {
@@ -16,18 +17,26 @@ namespace Backend.Services
         private readonly IMapper _mapper;
         private readonly IAuthorRepository _authorRepository;
         private readonly IGenreRepository _genreRepository;
+        private readonly UserManager<AppUser> _userManager;
 
-        public BookService(IBookRepository bookRepository, IMapper mapper, IAuthorRepository authorRepository, IGenreRepository genreRepository)
+        public BookService(IBookRepository bookRepository, IMapper mapper, IAuthorRepository authorRepository, IGenreRepository genreRepository,UserManager<AppUser> userManager)
         {
             this._bookRepository = bookRepository;
             this._mapper = mapper;
             this._authorRepository = authorRepository;
             this._genreRepository = genreRepository;
+            this._userManager = userManager;
         }
-        public async Task<BookDto?> AddBookAsync(CreateBookDto bookDto)
+        public async Task<BookDto?> AddBookAsync(CreateBookDto bookDto, string userName)
         {
             try
             {
+                var user = await _userManager.FindByNameAsync(userName);
+                var userRole = await _userManager.GetRolesAsync(user);
+                if (userRole.Count == 0 || userRole[0] != "Admin")
+                {
+                    throw new UnauthorizedAccessException("Only administrators can add authors");
+                }
                 var mappedBook = _mapper.Map<Book>(bookDto);
                 var bookForReturn = await _bookRepository.AddBookAsync(mappedBook);
                 if (bookForReturn is not null)
@@ -55,10 +64,16 @@ namespace Backend.Services
                 throw ;
             }
         }
-        public async Task<BookDto?> DeleteBookAsync(int id)
+        public async Task<BookDto?> DeleteBookAsync(int id, string userName)
         {
             try
             {
+                var user = await _userManager.FindByNameAsync(userName);
+                var userRole = await _userManager.GetRolesAsync(user);
+                if (userRole.Count == 0 || userRole[0] != "Admin")
+                {
+                    throw new UnauthorizedAccessException("Only administrators can add authors");
+                }                
                 var bookToDelete = await _bookRepository.GetBookByIdAsync(id) ?? throw new KeyNotFoundException();
                 var deletedBook = _mapper.Map<BookDto>(await _bookRepository.DeleteBookAsync(bookToDelete));
                 return deletedBook;
@@ -124,10 +139,16 @@ namespace Backend.Services
 
        
 
-        public async Task<BookDto?> UpdateBookAsync(UpdateBookDto bookDto, int Id)
+        public async Task<BookDto?> UpdateBookAsync(UpdateBookDto bookDto, int Id, string userName)
         {
             try
             {
+                var user = await _userManager.FindByNameAsync(userName);
+                var userRole = await _userManager.GetRolesAsync(user);
+                if (userRole.Count == 0 || userRole[0] != "Admin")
+                {
+                    throw new UnauthorizedAccessException("Only administrators can add authors");
+                }                
                 var existingBook = await _bookRepository.GetBookByIdAsync(Id) ?? throw new KeyNotFoundException();
                 var bookToUpdate = _mapper.Map<Book>(bookDto);
                 bookToUpdate.Id=Id;

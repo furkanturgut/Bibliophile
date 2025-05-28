@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using Backend.Dtos;
 using Backend.Dtos.BlogPostDtos;
 using Backend.Dtos.BookDtos;
+using Backend.Extensions;
 using Backend.Interface;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -20,10 +22,11 @@ namespace Backend.Controllers
             _bookService = bookService;
         }
 
-      
+
         [HttpGet]
         [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> GetAllBooks()
         {
             try
@@ -42,6 +45,7 @@ namespace Backend.Controllers
         [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> GetBookById(int bookId)
         {
             try
@@ -59,11 +63,13 @@ namespace Backend.Controllers
             }
         }
 
-        
+
         [HttpPost]
         [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> CreateBook([FromBody] CreateBookDto bookDto)
         {
             try
@@ -72,13 +78,17 @@ namespace Backend.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
-                var createdBook = await _bookService.AddBookAsync(bookDto);
+                string userName = User.GetUserName();
+                var createdBook = await _bookService.AddBookAsync(bookDto, userName);
                 return CreatedAtAction(nameof(GetBookById), new { id = createdBook.Id }, createdBook);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -88,6 +98,8 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> UpdateBook(int bookId, [FromBody] UpdateBookDto bookDto)
         {
             try
@@ -96,9 +108,13 @@ namespace Backend.Controllers
                 {
                     return BadRequest(ModelState);
                 }
-
-                var updatedBook = await _bookService.UpdateBookAsync(bookDto, bookId);
+                string userName = User.GetUserName();
+                var updatedBook = await _bookService.UpdateBookAsync(bookDto, bookId, userName);
                 return Ok(updatedBook);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
             }
             catch (KeyNotFoundException)
             {
@@ -115,16 +131,23 @@ namespace Backend.Controllers
         [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> DeleteBook(int bookId)
         {
             try
             {
-                var deletedBook = await _bookService.DeleteBookAsync(bookId);
+                string userName = User.GetUserName();
+                var deletedBook = await _bookService.DeleteBookAsync(bookId, userName);
                 return Ok(deletedBook);
             }
             catch (KeyNotFoundException)
             {
                 return NotFound($"Book with ID {bookId} not found");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
             }
             catch (Exception ex)
             {
@@ -136,6 +159,7 @@ namespace Backend.Controllers
         [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> GetBooksByAuthor(int authorId)
         {
             try
@@ -157,6 +181,7 @@ namespace Backend.Controllers
         [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> GetBooksByGenre(int genreId)
         {
             try

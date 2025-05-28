@@ -6,6 +6,7 @@ using AutoMapper;
 using Backend.Dtos.BlogPostDtos;
 using Backend.Interface;
 using Backend.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Services
 {
@@ -15,13 +16,15 @@ namespace Backend.Services
         private readonly IBookRepository _bookRepository;
         private readonly IAuthorRepository _authorRepository;
         private readonly IMapper _mapper;
+        private readonly UserManager<AppUser> _userManager;
 
-        public BlogPostService(IBlogPostRepository blogPostRepository,IBookRepository bookRepository,IAuthorRepository authorRepository,IMapper mapper)
+        public BlogPostService(IBlogPostRepository blogPostRepository,IBookRepository bookRepository,IAuthorRepository authorRepository,IMapper mapper, UserManager<AppUser> userManager)
         {
             this._blogPostRepository = blogPostRepository;
             this._bookRepository = bookRepository;
             this._authorRepository = authorRepository;
             this._mapper = mapper;
+            this._userManager = userManager;
         }
 
         public async Task<BlogPostDto?> GetBlogPostByIdAsync(int id)
@@ -66,13 +69,19 @@ namespace Backend.Services
             }
         }
 
-        public async Task<BlogPostDto> AddBlogPostAsync(CreateBlogPostDto blogPostDto, string userId)
+        public async Task<BlogPostDto> AddBlogPostAsync(CreateBlogPostDto blogPostDto, string userName)
         {
             try
             {
+                var user = await _userManager.FindByNameAsync(userName);
+                var userRole = await _userManager.GetRolesAsync(user);
+                if (userRole.Count == 0 || userRole[0] != "Admin" || userRole[0] != "Blogger")
+                {
+                    throw new UnauthorizedAccessException("Only Admins and Bloggers can add blog posts.");
+                }
                 // BlogPost nesnesini oluştur
                 var blogPost = _mapper.Map<BlogPost>(blogPostDto);
-                blogPost.UserId = userId;
+                blogPost.UserId = user.Id;
                 blogPost.CreatedAt = DateTime.Now;
                 
                 // Blog yazısını kaydet
@@ -101,7 +110,7 @@ namespace Backend.Services
                 }
                 
                 // İlişkili yazarları ekle
-                if (blogPostDto.AuthorIds != null && blogPostDto.AuthorIds.Any())
+                if (blogPostDto.AuthorIds != null && blogPostDto.AuthorIds.Count != 0)
                 {
                     foreach (var authorId in blogPostDto.AuthorIds)
                     {
@@ -131,14 +140,18 @@ namespace Backend.Services
             }
         }
 
-        public async Task<BlogPostDto?> UpdateBlogPostAsync(int id, UpdateBlogPostDto blogPostDto)
+        public async Task<BlogPostDto?> UpdateBlogPostAsync(int blogId, UpdateBlogPostDto blogPostDto, string userName)
         {
             try
             {
-                var existingBlogPost = await _blogPostRepository.GetBlogPostByIdAsync(id);
-                if (existingBlogPost == null)
-                    throw new KeyNotFoundException();
-                
+                var user = await _userManager.FindByNameAsync(userName);
+                var userRole = await _userManager.GetRolesAsync(user);
+                if (userRole.Count == 0 || userRole[0] != "Admin" || userRole[0] != "Blogger")
+                {
+                    throw new UnauthorizedAccessException("Only Admins and Bloggers can add blog posts.");
+                }
+                var existingBlogPost = await _blogPostRepository.GetBlogPostByIdAsync(blogId) ?? throw new KeyNotFoundException();
+
                 // Temel özellikleri güncelle
                 _mapper.Map(blogPostDto, existingBlogPost);
                 existingBlogPost.UpdatedAt = DateTime.Now;
@@ -209,14 +222,17 @@ namespace Backend.Services
             }
         }
 
-        public async Task<BlogPostDto?> DeleteBlogPostAsync(int id)
+        public async Task<BlogPostDto?> DeleteBlogPostAsync(int postId, string userName )
         {
             try
             {
-                var blogPost = await _blogPostRepository.GetBlogPostByIdAsync(id);
-                if (blogPost == null)
-                    throw new KeyNotFoundException();
-                
+                var user = await _userManager.FindByNameAsync(userName);
+                var userRole = await _userManager.GetRolesAsync(user);
+                if (userRole.Count == 0 || userRole[0] != "Admin" || userRole[0] != "Blogger")
+                {
+                    throw new UnauthorizedAccessException("Only Admins and Bloggers can add blog posts.");
+                }
+                var blogPost = await _blogPostRepository.GetBlogPostByIdAsync(postId) ?? throw new KeyNotFoundException();
                 var deletedBlogPost = await _blogPostRepository.DeleteBlogPostAsync(blogPost);
                 return _mapper.Map<BlogPostDto>(deletedBlogPost);
             }

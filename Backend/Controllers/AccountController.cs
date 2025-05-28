@@ -114,7 +114,7 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                throw ex;
+                return StatusCode(500, ex.Message);
             }
         }
     }

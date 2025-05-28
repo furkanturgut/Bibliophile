@@ -10,20 +10,20 @@ namespace Backend.Dtos
     {
         [Required]
         [StringLength(200)]
-        public string Name { get; set; }
+        public  required string Name { get; set; }
         
         [Required]
         public DateOnly ReleaseDate { get; set; }
         
         [StringLength(500)]
-        public string BookCover { get; set; }
+        public required string BookCover { get; set; }
         
         [StringLength(2000)]
-        public string Summary { get; set; }
+        public required string Summary { get; set; }
         
         [Required]
         public int AuthorId { get; set; }
 
-        public List<int> GenreIds { get; set; }
+        public List<int>? GenreIds { get; set; }
     }
 }

@@ -5,6 +5,7 @@ using AutoMapper;
 using Backend.Dtos.BookListDtos;
 using Backend.Interface;
 using Backend.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Services
 {
@@ -13,15 +14,14 @@ namespace Backend.Services
         private readonly IBookListRepository _bookListRepository;
         private readonly IBookRepository _bookRepository;
         private readonly IMapper _mapper;
+        private readonly UserManager<AppUser> _userManager;
 
-        public BookListService(
-            IBookListRepository bookListRepository,
-            IBookRepository bookRepository,
-            IMapper mapper)
+        public BookListService(IBookListRepository bookListRepository,IBookRepository bookRepository,IMapper mapper, UserManager<AppUser> userManager)
         {
             _bookListRepository = bookListRepository;
             _bookRepository = bookRepository;
             _mapper = mapper;
+            this._userManager = userManager;
         }
 
         public async Task<List<BookListDto>> GetAllBookListsAsync()
@@ -53,11 +53,12 @@ namespace Backend.Services
             }
         }
 
-        public async Task<List<BookListDto>> GetBookListsByUserIdAsync(string userId)
+        public async Task<List<BookListDto>> GetBookListsByUserIdAsync(string userName)
         {
             try
             {
-                var bookLists = await _bookListRepository.GetBookListsByUserIdAsync(userId);
+                var user = await _userManager.FindByNameAsync(userName);
+                var bookLists = await _bookListRepository.GetBookListsByUserIdAsync(user.Id);
                 return _mapper.Map<List<BookListDto>>(bookLists);
             }
             catch (Exception)
@@ -66,12 +67,13 @@ namespace Backend.Services
             }
         }
 
-        public async Task<BookListDto> CreateBookListAsync(CreateBookListDto createBookListDto, string userId)
+        public async Task<BookListDto> CreateBookListAsync(CreateBookListDto createBookListDto, string userName)
         {
             try
             {
+                var user = await _userManager.FindByNameAsync(userName);
                 var bookList = _mapper.Map<BookList>(createBookListDto);
-                bookList.UserId = userId;
+                bookList.UserId = user.Id;
                 bookList.CreatedAt = DateTime.Now;
                 bookList.UpdatedAt = DateTime.Now;
                 
@@ -146,12 +148,13 @@ namespace Backend.Services
             }
         }
 
-        public async Task<bool> IsUserListOwnerAsync(int listId, string userId)
+        public async Task<bool> IsUserListOwnerAsync(int listId, string userName)
         {
             try
             {
+                var user = await _userManager.FindByNameAsync(userName);
                 var bookList = await _bookListRepository.GetBookListByIdAsync(listId);
-                return bookList != null && bookList.UserId == userId;
+                return bookList != null && bookList.UserId == user.Id;
             }
             catch (Exception)
             {

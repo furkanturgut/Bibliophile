@@ -4,9 +4,12 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Backend.Dtos.BookDtos;
 using Backend.Dtos.BookListDtos;
+using Backend.Extensions;
 using Backend.Interface;
+using Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Controllers
@@ -16,10 +19,11 @@ namespace Backend.Controllers
     public class BookListController : ControllerBase
     {
         private readonly IBookListService _bookListService;
-
+  
         public BookListController(IBookListService bookListService)
         {
-            _bookListService = bookListService;
+            this._bookListService = bookListService;
+
         }
 
 
@@ -82,17 +86,19 @@ namespace Backend.Controllers
         [HttpGet("my-lists")]
         [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> GetMyBookLists()
         {
             try
             {
-                var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var bookLists = await _bookListService.GetBookListsByUserIdAsync(userId);
+                var userName = User.GetUserName();
+                var bookLists = await _bookListService.GetBookListsByUserIdAsync(userName);
                 return Ok(bookLists);
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -118,6 +124,8 @@ namespace Backend.Controllers
         [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> CreateBookList([FromBody] CreateBookListDto createBookListDto)
         {
             try
@@ -127,14 +135,14 @@ namespace Backend.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var createdBookList = await _bookListService.CreateBookListAsync(createBookListDto, userId);
+                string userName = User.GetUserName();
+                var createdBookList = await _bookListService.CreateBookListAsync(createBookListDto, userName);
 
                 return CreatedAtAction(nameof(GetBookListById), new { id = createdBookList.Id }, createdBookList);
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -155,8 +163,8 @@ namespace Backend.Controllers
                 }
 
 
-                var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var isOwner = await _bookListService.IsUserListOwnerAsync(id, userId);
+                var userName = User.GetUserName();
+                var isOwner = await _bookListService.IsUserListOwnerAsync(id, userName);
 
                 if (!isOwner && !User.IsInRole("Admin"))
                     return Forbid("Bu listeyi düzenleme yetkiniz yok");
@@ -173,20 +181,22 @@ namespace Backend.Controllers
             }
         }
 
-       
-        [HttpDelete("{id:int}")]
+
+        [HttpDelete("{bookId:int}")]
         [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
+
         public async Task<IActionResult> DeleteBookList(int bookId)
         {
             try
             {
 
-                var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var isOwner = await _bookListService.IsUserListOwnerAsync(bookId, userId);
+                var userName = User.GetUserName();
+                var isOwner = await _bookListService.IsUserListOwnerAsync(bookId,userName);
 
                 if (!isOwner && !User.IsInRole("Admin"))
                     return Forbid("Bu listeyi silme yetkiniz yok");
@@ -223,8 +233,8 @@ namespace Backend.Controllers
                 }
 
                 // Liste sahibi veya admin olup olmadığını kontrol et
-                var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var isOwner = await _bookListService.IsUserListOwnerAsync(id, userId);
+                var userName = User.GetUserName();
+                var isOwner = await _bookListService.IsUserListOwnerAsync(id, userName);
 
                 if (!isOwner && !User.IsInRole("Admin"))
                     return Forbid("Bu listeye kitap ekleme yetkiniz yok");
@@ -257,8 +267,8 @@ namespace Backend.Controllers
             try
             {
                 // Liste sahibi veya admin olup olmadığını kontrol et
-                var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var isOwner = await _bookListService.IsUserListOwnerAsync(listId, userId);
+                var userName = User.GetUserName();
+                var isOwner = await _bookListService.IsUserListOwnerAsync(listId, userName);
 
                 if (!isOwner && !User.IsInRole("Admin"))
                     return Forbid("Bu listeden kitap silme yetkiniz yok");

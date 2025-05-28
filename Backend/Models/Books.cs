@@ -9,10 +9,10 @@ namespace Backend.Models
     public class Book
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public required string Name { get; set; }
         public DateOnly ReleaseDate { get; set; }
-        public string BookCover { get; set; }
-        public string Summary { get; set; }
+        public required string BookCover { get; set; }
+        public required string Summary { get; set; }
         public decimal AvarageRating { get; set; }
         public int? AuthorId { get; set; } 
         public Author? Author { get; set; }  

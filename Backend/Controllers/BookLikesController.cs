@@ -1,3 +1,4 @@
+using Backend.Extensions;
 using Backend.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -40,13 +41,14 @@ namespace Backend.Controllers
         [HttpGet("is-liked")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> IsBookLikedByUser(int bookId)
         {
             try
             {
-                var userId ="02017753-34b3-4c58-a873-98b46937fef2";
-                var isLiked = await _bookLikesService.IsBookLikedByUserAsync(userId, bookId);
+                string userName = User.GetUserName();
+                var isLiked = await _bookLikesService.IsBookLikedByUserAsync(userName, bookId);
                 return Ok(new { IsLiked = isLiked });
             }
             catch (Exception ex)
@@ -59,12 +61,14 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> ToggleBookLike(int bookId)
         {
             try
             {
-                var userId ="02017753-34b3-4c58-a873-98b46937fef2";
-                var isLiked = await _bookLikesService.ToggleBookLikeAsync(userId, bookId);
+                var userName = User.GetUserName();
+                var isLiked = await _bookLikesService.ToggleBookLikeAsync(userName, bookId);
                 return Ok(new { IsLiked = isLiked });
             }
             catch (KeyNotFoundException ex)
@@ -80,12 +84,14 @@ namespace Backend.Controllers
         [HttpGet("/api/users/me/liked-books")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> GetUserLikedBooks()
         {
             try
             {
-                var userId ="02017753-34b3-4c58-a873-98b46937fef2";
-                var likedBookIds = await _bookLikesService.GetUserLikedBookIdsAsync(userId);
+                var userName = User.GetUserName();
+                var likedBookIds = await _bookLikesService.GetUserLikedBookIdsAsync(userName);
                 return Ok(new { BookIds = likedBookIds });
             }
             catch (Exception ex)

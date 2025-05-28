@@ -1,5 +1,6 @@
 using Backend.Interface;
 using Backend.Models;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +12,13 @@ namespace Backend.Services
     {
         private readonly IBookLikesRepository _bookLikesRepository;
         private readonly IBookRepository _bookRepository;
+        private readonly UserManager<AppUser> _userManager;
 
-        public BookLikesService(IBookLikesRepository bookLikesRepository, IBookRepository bookRepository)
+        public BookLikesService(IBookLikesRepository bookLikesRepository, IBookRepository bookRepository, UserManager<AppUser> userManager)
         {
             _bookLikesRepository = bookLikesRepository;
             _bookRepository = bookRepository;
+            this._userManager = userManager;
         }
 
         public async Task<int> GetBookLikesCountAsync(int bookId)
@@ -30,11 +33,12 @@ namespace Backend.Services
             }
         }
 
-        public async Task<bool> IsBookLikedByUserAsync(string userId, int bookId)
+        public async Task<bool> IsBookLikedByUserAsync(string userName, int bookId)
         {
             try
             {
-                return await _bookLikesRepository.IsBookLikedByUserAsync(userId, bookId);
+                var user = await _userManager.FindByNameAsync(userName);
+                return await _bookLikesRepository.IsBookLikedByUserAsync(user.Id, bookId);
             }
             catch (Exception)
             {
@@ -42,7 +46,7 @@ namespace Backend.Services
             }
         }
 
-        public async Task<bool> ToggleBookLikeAsync(string userId, int bookId)
+        public async Task<bool> ToggleBookLikeAsync(string userName, int bookId)
         {
             try
             {
@@ -54,7 +58,8 @@ namespace Backend.Services
                 }
 
                 // Kullanıcının kitabı beğenip beğenmediğini kontrol et
-                var existingLike = await _bookLikesRepository.GetBookLikeByUserAndBookAsync(userId, bookId);
+                var user = await _userManager.FindByNameAsync(userName);
+                var existingLike = await _bookLikesRepository.GetBookLikeByUserAndBookAsync(user.Id, bookId);
                 
                 if (existingLike != null)
                 {
@@ -68,7 +73,7 @@ namespace Backend.Services
                     var newLike = new BookLikes
                     {
                         BookId = bookId,
-                        UserId = userId
+                        UserId = user.Id
                     };
                     
                     await _bookLikesRepository.AddBookLikeAsync(newLike);
@@ -81,11 +86,12 @@ namespace Backend.Services
             }
         }
 
-        public async Task<List<int?>> GetUserLikedBookIdsAsync(string userId)
+        public async Task<List<int?>> GetUserLikedBookIdsAsync(string userName)
         {
             try
             {
-                var userLikes = await _bookLikesRepository.GetBookLikesByUserIdAsync(userId);
+                var user = await _userManager.FindByNameAsync(userName);
+                var userLikes = await _bookLikesRepository.GetBookLikesByUserIdAsync(user.Id);
                 return  userLikes.Select(bl => bl.BookId).ToList();
             }
             catch (Exception)

@@ -81,9 +81,9 @@ namespace Backend.Repositories
                 await _dataContext.SaveChangesAsync();
                 return blogPost;
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                throw ex;
+                throw;
             }
         }
 

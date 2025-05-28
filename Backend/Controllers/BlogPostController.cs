@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Backend.Extensions;
 
 namespace Backend.Controllers
 {
@@ -21,10 +22,11 @@ namespace Backend.Controllers
             _blogPostService = blogPostService;
         }
 
-       
+
         [HttpGet]
-        [ProducesResponseType(typeof(List<BlogPostDto>),StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<BlogPostDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> GetAllBlogPosts()
         {
             try
@@ -34,15 +36,16 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 
-   
+
         [HttpGet("{id:int}")]
-        [ProducesResponseType(typeof(BlogPostDto),StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(BlogPostDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> GetBlogPostById(int id)
         {
             try
@@ -50,19 +53,20 @@ namespace Backend.Controllers
                 var blogPost = await _blogPostService.GetBlogPostByIdAsync(id);
                 return Ok(blogPost);
             }
-            catch(KeyNotFoundException)
+            catch (KeyNotFoundException)
             {
                 return NotFound($"Blog yazısı ID {id} bulunamadı");
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 
         [HttpGet("author/{authorId:int}")]
-        [ProducesResponseType(typeof(List<BlogPostDto>),StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(List<BlogPostDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> GetBlogPostsByAuthor(int authorId)
         {
             try
@@ -78,10 +82,11 @@ namespace Backend.Controllers
 
 
         [HttpPost]
-        [ProducesResponseType(typeof(BlogPostDto),StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(BlogPostDto), StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> CreateBlogPost([FromBody] CreateBlogPostDto blogPostDto)
         {
             try
@@ -91,27 +96,30 @@ namespace Backend.Controllers
                     return BadRequest(ModelState);
                 }
 
-                // Giriş yapmış kullanıcının ID'sini al
-                var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                
-                var createdBlogPost = await _blogPostService.AddBlogPostAsync(blogPostDto, userId);
+                var userName = User.GetUserName();
+                var createdBlogPost = await _blogPostService.AddBlogPostAsync(blogPostDto, userName);
                 return CreatedAtAction(nameof(GetBlogPostById), new { id = createdBlogPost.Id }, createdBlogPost);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
             }
             catch (Exception ex)
             {
-                
-                return StatusCode(500,ex.Message);
+
+                return StatusCode(500, ex.Message);
             }
         }
 
-     
-        [HttpPut("{userId:int}")]
-        [ProducesResponseType(typeof(BlogPostDto),StatusCodes.Status200OK)]
+
+        [HttpPut("{blogId:int}")]
+        [ProducesResponseType(typeof(BlogPostDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> UpdateBlogPost(int userId, [FromBody] UpdateBlogPostDto blogPostDto)
+        [Authorize]
+        public async Task<IActionResult> UpdateBlogPost(int blogId, [FromBody] UpdateBlogPostDto blogPostDto)
         {
             try
             {
@@ -120,15 +128,19 @@ namespace Backend.Controllers
                     return BadRequest(ModelState);
                 }
 
-                // Yazı sahibi veya admin olduğunu kontrol etmek için burada bir yetkilendirme kontrolü yapılabilir. Claims Service ile userId kismi silinecek. 
-                
-                var updatedBlogPost = await _blogPostService.UpdateBlogPostAsync(userId, blogPostDto);
+                string userName = User.GetUserName();
+
+                var updatedBlogPost = await _blogPostService.UpdateBlogPostAsync(blogId, blogPostDto, userName);
 
                 return Ok(updatedBlogPost);
             }
             catch (KeyNotFoundException)
             {
-                return NotFound($"Blog yazısı ID {userId} bulunamadı");
+                return NotFound($"Blog yazısı ID {blogId} bulunamadı");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
             }
             catch (Exception)
             {
@@ -142,20 +154,25 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
         public async Task<IActionResult> DeleteBlogPost(int postId)
         {
             try
             {
-                // Yazı sahibi veya admin olduğunu kontrol etmek için burada bir yetkilendirme kontrolü yapılabilir
 
-                var deletedBlogPost = await _blogPostService.DeleteBlogPostAsync(postId);
-                
-                
+                string userName = User.GetUserName();
+                var deletedBlogPost = await _blogPostService.DeleteBlogPostAsync(postId, userName);
+
+
                 return Ok(deletedBlogPost);
             }
-            catch(KeyNotFoundException)
+            catch (KeyNotFoundException)
             {
                 return NotFound($"Blog yazısı ID {postId} bulunamadı");
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
             }
             catch (Exception)
             {
