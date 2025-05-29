@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Backend.Interface;
 using Backend.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Services
 {
@@ -11,11 +12,13 @@ namespace Backend.Services
     {
         private readonly IListLikeRepository _listLikeRepository;
         private readonly IBookListRepository _bookListRepository;
+        private readonly UserManager<AppUser> _userManager;
 
-        public ListLikeService(IListLikeRepository listLikeRepository, IBookListRepository bookListRepository)
+        public ListLikeService(IListLikeRepository listLikeRepository, IBookListRepository bookListRepository, UserManager<AppUser> userManager)
         {
             _listLikeRepository = listLikeRepository;
             _bookListRepository = bookListRepository;
+            this._userManager = userManager;
         }
 
         public async Task<int> GetListLikesCountAsync(int listId)
@@ -30,11 +33,11 @@ namespace Backend.Services
             }
         }
 
-        public async Task<bool> IsListLikedByUserAsync(string userId, int listId)
+        public async Task<bool> IsListLikedByUserAsync(string userName, int listId)
         {
             try
             {
-                return await _listLikeRepository.IsListLikedByUserAsync(userId, listId);
+                return await _listLikeRepository.IsListLikedByUserAsync(userName, listId);
             }
             catch (Exception)
             {
@@ -42,15 +45,16 @@ namespace Backend.Services
             }
         }
 
-        public async Task<bool> ToggleListLikeAsync(string userId, int listId)
+        public async Task<bool> ToggleListLikeAsync(string userName, int listId)
         {
             try
             {
                 // Listenin var olup olmadığını kontrol et
+                var user = await _userManager.FindByNameAsync(userName);
                 var list = await _bookListRepository.GetBookListByIdAsync(listId) ?? throw new KeyNotFoundException($"ID {listId} ile liste bulunamadı");
 
                 // Kullanıcının listeyi beğenip beğenmediğini kontrol et
-                var existingLike = await _listLikeRepository.GetListLikeByUserAndListAsync(userId, listId);
+                var existingLike = await _listLikeRepository.GetListLikeByUserAndListAsync(userName, listId);
                 
                 if (existingLike != null)
                 {
@@ -64,7 +68,7 @@ namespace Backend.Services
                     var newLike = new ListLike
                     {
                         ListId = listId,
-                        UserId = userId
+                        UserId = user.Id
                     };
                     
                     await _listLikeRepository.AddListLikeAsync(newLike);

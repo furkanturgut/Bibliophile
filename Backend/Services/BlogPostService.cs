@@ -75,7 +75,7 @@ namespace Backend.Services
             {
                 var user = await _userManager.FindByNameAsync(userName);
                 var userRole = await _userManager.GetRolesAsync(user);
-                if (userRole.Count == 0 || userRole[0] != "Admin" || userRole[0] != "Blogger")
+                if (userRole.Count == 0 || (userRole[0] != "Admin" && userRole[0] != "Blogger"))
                 {
                     throw new UnauthorizedAccessException("Only Admins and Bloggers can add blog posts.");
                 }
@@ -228,7 +228,7 @@ namespace Backend.Services
             {
                 var user = await _userManager.FindByNameAsync(userName);
                 var userRole = await _userManager.GetRolesAsync(user);
-                if (userRole.Count == 0 || userRole[0] != "Admin" || userRole[0] != "Blogger")
+                 if (userRole.Count == 0 || (userRole[0] != "Admin" && userRole[0] != "Blogger"))
                 {
                     throw new UnauthorizedAccessException("Only Admins and Bloggers can add blog posts.");
                 }
@@ -254,6 +254,20 @@ namespace Backend.Services
             }
         }
 
-      
+        public async Task<List<BlogPostDto>?> GetBlogPostByBook(int bookId)
+        {
+
+            try
+            {
+                var bookExist = await _bookRepository.GetBookByIdAsync(bookId) ?? throw new KeyNotFoundException();
+                var blogPosts = _mapper.Map<List<BlogPostDto>?>(await _blogPostRepository.GetBlogPostByBook(bookId));
+                return blogPosts;
+            }
+
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }

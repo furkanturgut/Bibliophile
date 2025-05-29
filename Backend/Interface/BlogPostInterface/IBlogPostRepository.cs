@@ -14,6 +14,7 @@ namespace Backend.Interface
         Task<BlogPost?> UpdateBlogPostAsync(BlogPost blogPost);
         Task<BlogPost?> DeleteBlogPostAsync(BlogPost blogPost);
         Task<bool> BlogPostExistsAsync(int id);
+        Task<List<BlogPost>> GetBlogPostByBook(int bookId);
       
     }
 }

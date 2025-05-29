@@ -54,28 +54,32 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<ApplicationDataContext>(options =>
     options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString)));
 
-builder.Services.AddIdentity<AppUser, IdentityRole>(Options =>
+builder.Services.AddIdentity<AppUser,IdentityRole>(options =>
 {
-    // Identity configuration
-}).AddEntityFrameworkStores<ApplicationDataContext>().AddDefaultTokenProviders();
-
-builder.Services.AddAuthentication(options =>
+    options.Password.RequireDigit=true;
+    options.Password.RequiredLength=12; 
+    options.Password.RequireLowercase=true;
+    options.Password.RequireUppercase=true;
+}).AddEntityFrameworkStores<ApplicationDataContext>();
+builder.Services.AddAuthentication(options=> 
 {
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(options =>
+    options.DefaultAuthenticateScheme=
+    options.DefaultChallengeScheme=
+    options.DefaultForbidScheme=
+    options.DefaultScheme=
+    options.DefaultSignInScheme=
+    options.DefaultSignOutScheme=JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer (options=>
 {
-    options.SaveToken = true;
-    options.RequireHttpsMetadata = false;
-    options.TokenValidationParameters = new TokenValidationParameters()
+    options.TokenValidationParameters= 
+    new TokenValidationParameters
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-        ValidAudience = builder.Configuration["JWT:ValidAudience"],
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"] ?? "fallbackSecretKey12345678901234567890"))
+        ValidateIssuer= true,
+        ValidIssuer= builder.Configuration["JWT:Issuer"],
+        ValidateAudience= true,
+        ValidAudience= builder.Configuration["JWT:Audience"],
+        ValidateIssuerSigningKey =true,
+        IssuerSigningKey = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(builder.Configuration["JWT:SigningKey"]))
     };
 });
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());

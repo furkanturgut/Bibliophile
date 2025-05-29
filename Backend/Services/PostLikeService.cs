@@ -1,5 +1,6 @@
 using Backend.Interface;
 using Backend.Models;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,11 +12,13 @@ namespace Backend.Services
     {
         private readonly IPostLikeRepository _postLikeRepository;
         private readonly IBlogPostRepository _blogPostRepository;
+        private readonly UserManager<AppUser> _userManager;
 
-        public PostLikeService(IPostLikeRepository postLikeRepository, IBlogPostRepository blogPostRepository)
+        public PostLikeService(IPostLikeRepository postLikeRepository, IBlogPostRepository blogPostRepository, UserManager<AppUser> userManager)
         {
             _postLikeRepository = postLikeRepository;
             _blogPostRepository = blogPostRepository;
+            this._userManager = userManager;
         }
 
         public async Task<int> GetPostLikesCountAsync(int postId)
@@ -30,11 +33,12 @@ namespace Backend.Services
             }
         }
 
-        public async Task<bool> IsPostLikedByUserAsync(string userId, int postId)
+        public async Task<bool> IsPostLikedByUserAsync(string userName, int postId)
         {
             try
             {
-                return await _postLikeRepository.IsPostLikedByUserAsync(userId, postId);
+                var user = await _userManager.FindByNameAsync(userName);
+                return await _postLikeRepository.IsPostLikedByUserAsync(user.Id, postId);
             }
             catch (Exception)
             {
@@ -42,19 +46,16 @@ namespace Backend.Services
             }
         }
 
-        public async Task<bool> TogglePostLikeAsync(string userId, int postId)
+        public async Task<bool> TogglePostLikeAsync(string userName, int postId)
         {
             try
             {
+                var user = await _userManager.FindByNameAsync(userName);
                 // Blog yazısının var olup olmadığını kontrol et
-                var post = await _blogPostRepository.GetBlogPostByIdAsync(postId);
-                if (post == null)
-                {
-                    throw new KeyNotFoundException($"ID {postId} ile blog yazısı bulunamadı");
-                }
+                var post = await _blogPostRepository.GetBlogPostByIdAsync(postId) ?? throw new KeyNotFoundException($"ID {postId} ile blog yazısı bulunamadı");
 
                 // Kullanıcının yazıyı beğenip beğenmediğini kontrol et
-                var existingLike = await _postLikeRepository.GetPostLikeByUserAndPostAsync(userId, postId);
+                var existingLike = await _postLikeRepository.GetPostLikeByUserAndPostAsync(user.Id, postId);
                 
                 if (existingLike != null)
                 {
@@ -68,7 +69,7 @@ namespace Backend.Services
                     var newLike = new PostLike
                     {
                         PostId = postId,
-                        UserId = userId
+                        UserId = user.Id
                     };
                     
                     await _postLikeRepository.AddPostLikeAsync(newLike);

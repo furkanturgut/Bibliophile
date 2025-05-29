@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Backend.Dtos.RatingDtos;
+using Backend.Extensions;
 using Backend.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -97,17 +98,19 @@ namespace Backend.Controllers
         [HttpGet("my-ratings")]
         [ProducesResponseType(typeof(List<RatingDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> GetMyRatings()
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var ratings = await _ratingService.GetRatingsByUserAsync(userId);
+                var userName = User.GetUserName();
+                var ratings = await _ratingService.GetRatingsByUserAsync(userName);
                 return Ok(ratings);
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -116,12 +119,14 @@ namespace Backend.Controllers
         [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> GetMyRatingForBook(int bookId)
         {
             try
             {
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                var rating = await _ratingService.GetRatingByUserAndBookAsync(userId, bookId);
+                var userName = User.GetUserName();
+                var rating = await _ratingService.GetRatingByUserAndBookAsync(userName, bookId);
                 return Ok(rating);
             }
             catch (KeyNotFoundException)
@@ -130,7 +135,7 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -139,6 +144,8 @@ namespace Backend.Controllers
         [ProducesResponseType(typeof(RatingDto), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> AddRating([FromBody] CreateRatingDto ratingDto)
         {
             try
@@ -148,10 +155,10 @@ namespace Backend.Controllers
                     return BadRequest(ModelState);
                 }
 
-                var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var createdRating = await _ratingService.AddRatingAsync(ratingDto, userId);
+                var userName = User.GetUserName();
+                var createdRating = await _ratingService.AddRatingAsync(ratingDto, userName);
 
-                return CreatedAtAction(nameof(GetRatingById), new { id = createdRating.Id }, createdRating);
+                return Ok(createdRating);
             }
             catch (InvalidOperationException ex)
             {
@@ -182,8 +189,8 @@ namespace Backend.Controllers
                 // Değerlendirmenin sahibi olup olmadığını kontrol et
                 var rating = await _ratingService.GetRatingByIdAsync(ratingId);
 
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (rating.UserId != userId && !User.IsInRole("Admin"))
+                var userName = User.GetUserName(); 
+                if (rating.UserName != userName && !User.IsInRole("Admin"))
                     return Forbid("Bu değerlendirmeyi düzenleme yetkiniz yok");
 
                 var updatedRating = await _ratingService.UpdateRatingAsync(ratingId, ratingDto);
@@ -204,6 +211,7 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [Authorize]
 
         public async Task<IActionResult> DeleteRating(int ratingId)
         {
@@ -212,10 +220,7 @@ namespace Backend.Controllers
                 // Değerlendirmenin sahibi olup olmadığını kontrol et
                 var rating = await _ratingService.GetRatingByIdAsync(ratingId);
 
-                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (rating.UserId != userId && !User.IsInRole("Admin"))
-                    return Forbid("Bu değerlendirmeyi silme yetkiniz yok");
-
+                var userName = User.GetUserName();
                 var deletedRating = await _ratingService.DeleteRatingAsync(ratingId);
                 return Ok(deletedRating);
             }
@@ -225,7 +230,7 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
 
@@ -236,12 +241,12 @@ namespace Backend.Controllers
         {
             try
             {
-        
-                return Ok(new { BookId = bookId });
+                var AverageRating = await _ratingService.CalculateAverageRatingAsync(bookId);
+                return Ok(AverageRating);
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
     }

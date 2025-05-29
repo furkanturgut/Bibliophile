@@ -143,5 +143,23 @@ namespace Backend.Repositories
                 throw;
             }
         }
+
+        public async Task<List<BlogPost>> GetBlogPostByBook(int bookId)
+        {
+            try
+            {
+                return await _dataContext.blogPosts
+                    .Include(b => b.User)
+                    .Include(b => b.BooksOfPosts)
+                    .ThenInclude(bp => bp.Book)
+                    .Where(b => b.BooksOfPosts.Any(bp => bp.BookId == bookId))
+                    .OrderByDescending(b => b.CreatedAt)
+                    .ToListAsync();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
     }
 }

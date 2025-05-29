@@ -1,3 +1,4 @@
+using Backend.Extensions;
 using Backend.Interface;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -40,12 +41,14 @@ namespace Backend.Controllers
         [HttpGet("is-liked")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> IsPostLikedByUser(int postId)
         {
             try
             {
-                var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var isLiked = await _postLikeService.IsPostLikedByUserAsync(userId, postId);
+                var userName =User.GetUserName();
+                var isLiked = await _postLikeService.IsPostLikedByUserAsync(userName, postId);
                 return Ok(new { IsLiked = isLiked });
             }
             catch (Exception ex)
@@ -59,12 +62,14 @@ namespace Backend.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [Authorize]
         public async Task<IActionResult> TogglePostLike(int postId)
         {
             try
             {
-                var userId = "02017753-34b3-4c58-a873-98b46937fef2";
-                var isLiked = await _postLikeService.TogglePostLikeAsync(userId, postId);
+                var userName = User.GetUserName();
+                var isLiked = await _postLikeService.TogglePostLikeAsync(userName, postId);
                 return Ok(new { IsLiked = isLiked });
             }
             catch (KeyNotFoundException ex)
@@ -73,7 +78,7 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500,ex.Message);
+                return StatusCode(500, ex.Message);
             }
         }
     }

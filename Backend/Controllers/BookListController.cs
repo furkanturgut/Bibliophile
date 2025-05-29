@@ -42,30 +42,6 @@ namespace Backend.Controllers
                 return StatusCode(500,ex.Message);
             }
         }
-
-
-        [HttpGet("{bookId:int}")]
-        [ProducesResponseType(typeof(BookDto), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> GetBookListById(int bookId)
-        {
-            try
-            {
-                var bookList = await _bookListService.GetBookListByIdAsync(bookId);
-                return Ok(bookList);
-            }
-            catch (KeyNotFoundException)
-            {
-                 return NotFound($"ID {bookId} ile kitap listesi bulunamadı");
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, ex.Message);
-            }
-        }
-
-
         [HttpGet("user/{userId}")]
         [ProducesResponseType(typeof(List<BookDto>), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -138,7 +114,7 @@ namespace Backend.Controllers
                 string userName = User.GetUserName();
                 var createdBookList = await _bookListService.CreateBookListAsync(createBookListDto, userName);
 
-                return CreatedAtAction(nameof(GetBookListById), new { id = createdBookList.Id }, createdBookList);
+                return Ok(createdBookList);
             }
             catch (Exception ex)
             {
@@ -196,11 +172,6 @@ namespace Backend.Controllers
             {
 
                 var userName = User.GetUserName();
-                var isOwner = await _bookListService.IsUserListOwnerAsync(bookId,userName);
-
-                if (!isOwner && !User.IsInRole("Admin"))
-                    return Forbid("Bu listeyi silme yetkiniz yok");
-
                 var deletedBookList = await _bookListService.DeleteBookListAsync(bookId);
 
 

@@ -180,7 +180,7 @@ namespace Backend.Controllers
             }
         }
 
-    
+
         [HttpGet("exists/{postId:int}")]
         [ProducesResponseType(typeof(bool), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -194,6 +194,27 @@ namespace Backend.Controllers
             catch (Exception)
             {
                 return StatusCode(500, "Internal server error");
+            }
+        }
+
+        [HttpGet("book/{bookId:int}")]
+        [ProducesResponseType(typeof(BlogPostDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult> GetBlogPostByBookAsync(int bookId)
+        {
+            try
+            {
+                var blogPosts = await _blogPostService.GetBlogPostByBook(bookId);
+                return Ok(blogPosts);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
             }
         }
     }

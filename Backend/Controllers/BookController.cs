@@ -80,7 +80,7 @@ namespace Backend.Controllers
                 }
                 string userName = User.GetUserName();
                 var createdBook = await _bookService.AddBookAsync(bookDto, userName);
-                return CreatedAtAction(nameof(GetBookById), new { id = createdBook.Id }, createdBook);
+                return Ok(createdBook);
             }
             catch (UnauthorizedAccessException ex)
             {
@@ -122,7 +122,7 @@ namespace Backend.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ex.Message);
+                return StatusCode(500, ex.InnerException);
             }
         }
 

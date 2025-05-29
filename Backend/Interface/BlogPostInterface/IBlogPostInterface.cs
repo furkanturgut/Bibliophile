@@ -8,7 +8,7 @@ namespace Backend.Interface
 {
     public interface IBlogPostService
     {
-       
+
         Task<BlogPostDto?> GetBlogPostByIdAsync(int id);
         Task<List<BlogPostDto>> GetAllBlogPostsAsync();
         Task<List<BlogPostDto>> GetBlogPostsByAuthorIdAsync(int authorId);
@@ -16,6 +16,7 @@ namespace Backend.Interface
         Task<BlogPostDto?> UpdateBlogPostAsync(int blogId, UpdateBlogPostDto blogPostDto, string userName);
         Task<BlogPostDto?> DeleteBlogPostAsync(int postId, string userName);
         Task<bool> BlogPostExistsAsync(int id);
+        Task<List<BlogPostDto>?> GetBlogPostByBook(int bookId);
         
      
     }

@@ -63,12 +63,12 @@ namespace Backend.Repositories
             }
         }
 
-        public async Task<ListLike> GetListLikeByUserAndListAsync(string userId, int listId)
+        public async Task<ListLike> GetListLikeByUserAndListAsync(string userName, int listId)
         {
             try
             {
                 return await _dataContext.listLikes
-                    .FirstOrDefaultAsync(ll => ll.UserId == userId && ll.ListId == listId);
+                    .FirstOrDefaultAsync(ll => ll.User.UserName == userName && ll.ListId == listId);
             }
             catch (Exception)
             {
@@ -118,12 +118,12 @@ namespace Backend.Repositories
             }
         }
 
-        public async Task<bool> IsListLikedByUserAsync(string userId, int listId)
+        public async Task<bool> IsListLikedByUserAsync(string userName, int listId)
         {
             try
             {
                 return await _dataContext.listLikes
-                    .AnyAsync(ll => ll.UserId == userId && ll.ListId == listId);
+                    .AnyAsync(ll => ll.User.UserName == userName && ll.ListId == listId);
             }
             catch (Exception)
             {

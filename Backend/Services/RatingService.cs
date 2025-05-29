@@ -5,6 +5,7 @@ using AutoMapper;
 using Backend.Dtos.RatingDtos;
 using Backend.Interface;
 using Backend.Models;
+using Microsoft.AspNetCore.Identity;
 
 namespace Backend.Services
 {
@@ -13,12 +14,14 @@ namespace Backend.Services
         private readonly IRatingRepository _ratingRepository;
         private readonly IBookRepository _bookRepository;
         private readonly IMapper _mapper;
+        private readonly UserManager<AppUser> _userManager;
 
-        public RatingService(IRatingRepository ratingRepository,IBookRepository bookRepository,IMapper mapper)
+        public RatingService(IRatingRepository ratingRepository, IBookRepository bookRepository, IMapper mapper, UserManager<AppUser> userManager)
         {
             _ratingRepository = ratingRepository;
             _bookRepository = bookRepository;
             _mapper = mapper;
+            this._userManager = userManager;
         }
 
         public async Task<List<RatingDto>> GetAllRatingsAsync()
@@ -60,11 +63,12 @@ namespace Backend.Services
             }
         }
 
-        public async Task<List<RatingDto>> GetRatingsByUserAsync(string userId)
+        public async Task<List<RatingDto>> GetRatingsByUserAsync(string userName)
         {
             try
             {
-                var ratings = await _ratingRepository.GetRatingsByUserAsync(userId);
+                var user = await _userManager.FindByNameAsync(userName);
+                var ratings = await _ratingRepository.GetRatingsByUserAsync(user.Id);
                 return _mapper.Map<List<RatingDto>>(ratings);
             }
             catch (Exception)
@@ -73,14 +77,15 @@ namespace Backend.Services
             }
         }
 
-        public async Task<RatingDto?> GetRatingByUserAndBookAsync(string userId, int bookId)
+        public async Task<RatingDto?> GetRatingByUserAndBookAsync(string userName, int bookId)
         {
             try
             {
-                var rating = await _ratingRepository.GetRatingByUserAndBookAsync(userId, bookId);
+                var user = await _userManager.FindByNameAsync(userName);
+                var rating = await _ratingRepository.GetRatingByUserAndBookAsync(user.Id, bookId);
                 if (rating == null)
-                    return null;
-                    
+                    throw new KeyNotFoundException();
+
                 return _mapper.Map<RatingDto>(rating);
             }
             catch (Exception)
@@ -89,26 +94,27 @@ namespace Backend.Services
             }
         }
 
-        public async Task<RatingDto> AddRatingAsync(CreateRatingDto ratingDto, string userId)
+        public async Task<RatingDto> AddRatingAsync(CreateRatingDto ratingDto, string userName)
         {
             try
             {
+                var user = await _userManager.FindByNameAsync(userName);
                 // Kullanıcının zaten değerlendirme yapıp yapmadığını kontrol et
-                var existingRating = await _ratingRepository.GetRatingByUserAndBookAsync(userId, ratingDto.BookId);
+                var existingRating = await _ratingRepository.GetRatingByUserAndBookAsync(user.Id, ratingDto.BookId);
                 if (existingRating != null)
                 {
                     throw new InvalidOperationException("Bu kitap için zaten bir değerlendirme yaptınız. Mevcut değerlendirmenizi güncelleyebilirsiniz.");
                 }
-                
+
                 // Yeni rating oluştur
                 var rating = _mapper.Map<Rating>(ratingDto);
-                rating.UserId = userId;
-                
+                rating.UserId = user.Id;
+
                 var createdRating = await _ratingRepository.AddRatingAsync(rating);
-                
+
                 // Kitabın ortalama puanını güncelle
                 await UpdateBookAverageRatingAsync(ratingDto.BookId);
-                
+
                 return _mapper.Map<RatingDto>(createdRating);
             }
             catch (Exception)
@@ -125,18 +131,18 @@ namespace Backend.Services
                 var existingRating = await _ratingRepository.GetRatingByIdAsync(id);
                 if (existingRating == null)
                     return null;
-                    
+
                 // Değerlendirmeyi güncelle
                 _mapper.Map(ratingDto, existingRating);
-                
+
                 var updatedRating = await _ratingRepository.UpdateRatingAsync(existingRating);
-                
+
                 // Kitabın ortalama puanını güncelle
                 if (updatedRating?.BookId != null)
                 {
                     await UpdateBookAverageRatingAsync(updatedRating.BookId.Value);
                 }
-                
+
                 return _mapper.Map<RatingDto>(updatedRating);
             }
             catch (Exception)
@@ -150,18 +156,18 @@ namespace Backend.Services
             try
             {
                 var rating = await _ratingRepository.GetRatingByIdAsync(id) ?? throw new KeyNotFoundException();
-                
-                    
+
+
                 var bookId = rating.BookId;
-                
+
                 var deletedRating = await _ratingRepository.DeleteRatingAsync(rating);
-                
+
                 // Kitabın ortalama puanını güncelle
                 if (bookId != null)
                 {
                     await UpdateBookAverageRatingAsync(bookId.Value);
                 }
-                
+
                 return _mapper.Map<RatingDto>(deletedRating);
             }
             catch (Exception)
@@ -170,19 +176,37 @@ namespace Backend.Services
             }
         }
 
-        
+
         public async Task UpdateBookAverageRatingAsync(int bookId)
         {
             try
             {
-                
-                // ortalama puani burada guncellenecek. EKLE!!!!!!!!
+                var averageRating = await CalculateAverageRatingAsync(bookId);
                 var book = await _bookRepository.GetBookByIdAsync(bookId);
+                
                 if (book != null)
                 {
-  
+                    book.AvarageRating = (decimal)averageRating;
                     await _bookRepository.UpdateBookAsync(book);
                 }
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        
+        public async Task<double> CalculateAverageRatingAsync(int bookId)
+        {
+            try
+            {
+                var ratings = await _ratingRepository.GetRatingsByBookAsync(bookId);
+                
+                if (ratings == null || ratings.Count == 0)
+                    return 0.0;
+                
+                var sum = ratings.Sum(r => r.Rate);
+                return Math.Round((double)sum / ratings.Count, 2);
             }
             catch (Exception)
             {
